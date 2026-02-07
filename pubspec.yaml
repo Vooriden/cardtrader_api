@@ -1,5 +1,5 @@
 name: cardtrader_api
-description: A wrapper of the CardTrader API for the Dart programming language.
+description: A Dart package for interacting with the CardTrader API.
 version: 0.1.0
 homepage: https://github.com/Vooriden/cardtrader_api
 
