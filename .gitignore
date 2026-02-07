@@ -28,5 +28,7 @@
 .packages
 build/
 
+coverage/
+
 # environment variables
 .env
