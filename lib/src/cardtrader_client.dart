@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:cardtrader_api/src/models/cardtrader_exception.dart';
 import 'package:cardtrader_api/src/models/models.dart';
 import 'package:http/http.dart' as http;
 
@@ -57,6 +56,35 @@ class CardTraderClient {
     }
 
     return AppInfo.fromJson(json);
+  }
+
+  // ========== GAMES ==========
+
+  /// **GET**  /games
+  ///
+  /// Retrieves the list of games.
+  ///
+  /// Example response:
+  /// ```json
+  /// {
+  ///   "array": [
+  ///     {
+  ///       "id": 1,
+  ///       "display_name": "Magic: the Gathering",
+  ///       "name": "Magic"
+  ///     }
+  ///   ]
+  /// }
+  /// ```
+  Future<GameList> getGames() async {
+    final response = await _get('/games');
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(json, response.statusCode);
+    }
+
+    return GameList.fromJson(json);
   }
 
   // ========== PRIVATE METHODS ==========

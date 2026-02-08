@@ -1,0 +1,19 @@
+{
+  "array": [
+    {
+      "id": 1,
+      "display_name": "Magic: the Gathering",
+      "name": "Magic"
+    },
+    {
+      "id": 4,
+      "display_name": "Yu-Gi-Oh!",
+      "name": "Yu-Gi-Oh!"
+    },
+    {
+      "id": 5,
+      "display_name": "Pokémon",
+      "name": "Pokémon"
+    }
+  ]
+}

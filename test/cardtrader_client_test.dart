@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cardtrader_api/src/cardtrader_client.dart';
-import 'package:cardtrader_api/src/models/cardtrader_exception.dart';
-import 'package:dotenv/dotenv.dart';
+import 'package:cardtrader_api/cardtrader_api.dart';
 import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -17,7 +15,6 @@ class FakeUri extends Fake implements Uri {}
 void main() {
   group('CardTraderClient', () {
     late http.Client httpClient;
-    late CardTraderClient mockedCardTraderClient;
     late CardTraderClient cardTraderClient;
 
     late String jsonError;
@@ -28,27 +25,10 @@ void main() {
 
     setUp(() {
       httpClient = MockHttpClient();
-      mockedCardTraderClient = CardTraderClient(
+      cardTraderClient = CardTraderClient(
         httpClient: httpClient,
         apiKey: 'test_api_key',
       );
-
-      // Try to get API key from system environment first
-      var apiKey = Platform.environment['CARDTRADER_API_KEY'];
-
-      // If not found, fall back to .env file
-      if (apiKey == null) {
-        final env = DotEnv()..load();
-        apiKey = env['CARDTRADER_API_KEY'];
-      }
-
-      if (apiKey == null) {
-        throw Exception(
-          'CARDTRADER_API_KEY not found in environment variables or .env file',
-        );
-      }
-
-      cardTraderClient = CardTraderClient(apiKey: apiKey);
 
       jsonError = jsonEncode({
         'error_code': 'error_code_example',
@@ -59,7 +39,6 @@ void main() {
 
     tearDown(() {
       cardTraderClient.close();
-      mockedCardTraderClient.close();
     });
 
     group('constructor', () {
@@ -75,12 +54,10 @@ void main() {
 
     group('close', () {
       test('should close the HTTP client', () async {
-        cardTraderClient.close();
+        final client = CardTraderClient(apiKey: 'test_api_key');
+        client.close();
 
-        expect(
-          cardTraderClient.getInfo(),
-          throwsA(isA<http.ClientException>()),
-        );
+        expect(client.getInfo(), throwsA(isA<http.ClientException>()));
       });
     });
 
@@ -101,8 +78,9 @@ void main() {
           () => httpClient.get(any(), headers: any(named: 'headers')),
         ).thenAnswer((_) async => mockResponse);
 
-        final info = await mockedCardTraderClient.getInfo();
+        final info = await cardTraderClient.getInfo();
 
+        expect(info, isA<AppInfo>());
         expect(info.id, 3);
         expect(info.name, 'Test App');
         expect(info.sharedSecret, 'some-secret');
@@ -117,18 +95,43 @@ void main() {
           () => httpClient.get(any(), headers: any(named: 'headers')),
         ).thenAnswer((_) async => mockResponse);
 
-        expect(
-          () async => await mockedCardTraderClient.getInfo(),
+        await expectLater(
+          cardTraderClient.getInfo(),
           throwsA(isA<CardTraderException>()),
         );
       });
+    });
 
-      test('should return API info on success with real client', () async {
-        final info = await cardTraderClient.getInfo();
+    group('getGames', () {
+      test('should return list of games on success', () async {
+        final file = File('test/fixtures/get_games.json');
+        final jsonContent = await file.readAsString();
 
-        expect(info.id, isA<int>());
-        expect(info.name, isA<String>());
-        expect(info.sharedSecret, isA<String>());
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final games = await cardTraderClient.getGames();
+
+        expect(games, isA<GameList>());
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getGames(),
+          throwsA(isA<CardTraderException>()),
+        );
       });
     });
   });
