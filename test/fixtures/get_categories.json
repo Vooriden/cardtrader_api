@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1,
+    "name": "Single Cards",
+    "game_id": 1,
+    "properties": [
+      {
+        "name": "condition",
+        "type": "string",
+        "possible_values": ["Near Mint", "Excellent", "Good", "Poor"]
+      },
+      {
+        "name": "language",
+        "type": "string",
+        "possible_values": ["en", "it", "de", "fr", "es", "jp"]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Sealed Products",
+    "game_id": 1,
+    "properties": []
+  }
+]

@@ -87,6 +87,57 @@ class CardTraderClient {
     return GameList.fromJson(json);
   }
 
+  // ========== CATEGORIES ==========
+
+  /// **GET**  /categories
+  ///
+  /// Retrieves the list of categories for products.
+  ///
+  /// Categories are used to organize products by type within a game,
+  /// such as "Single Cards", "Sealed Products", "Accessories", etc.
+  ///
+  /// [gameId] - Optional filter by game ID to get categories for a specific game.
+  ///
+  /// Example response:
+  /// ```json
+  /// [
+  ///   {
+  ///     "id": 1,
+  ///     "name": "Single Cards",
+  ///     "game_id": 1,
+  ///     "properties": [
+  ///       {
+  ///         "name": "condition",
+  ///         "type": "string",
+  ///         "possible_values": ["Near Mint", "Excellent", "Good", "Poor"]
+  ///       }
+  ///     ]
+  ///   }
+  /// ]
+  /// ```
+  Future<List<Category>> getCategories({int? gameId}) async {
+    final queryParameters = gameId != null
+        ? {'game_id': gameId.toString()}
+        : null;
+
+    final response = await _get(
+      '/categories',
+      queryParameters: queryParameters,
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return (json as List<dynamic>)
+        .map((e) => Category.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   // ========== PRIVATE METHODS ==========
 
   Future<http.Response> _get(

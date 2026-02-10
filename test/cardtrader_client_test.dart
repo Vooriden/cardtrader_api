@@ -134,5 +134,62 @@ void main() {
         );
       });
     });
+
+    group('getCategories', () {
+      test('should return list of categories on success', () async {
+        final file = File('test/fixtures/get_categories.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final categories = await cardTraderClient.getCategories();
+
+        expect(categories, isA<List<Category>>());
+        expect(categories.length, 2);
+        expect(categories.first.name, 'Single Cards');
+        expect(categories.first.properties.length, 2);
+      });
+
+      test('should pass gameId as query parameter', () async {
+        final file = File('test/fixtures/get_categories.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getCategories(gameId: 1);
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.first as Uri;
+        expect(uri.queryParameters['game_id'], '1');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getCategories(),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
   });
 }
