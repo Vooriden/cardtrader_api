@@ -191,5 +191,99 @@ void main() {
         );
       });
     });
+
+    group('getExpansions', () {
+      test('should return list of expansions on success', () async {
+        final file = File('test/fixtures/get_expansions.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final expansions = await cardTraderClient.getExpansions();
+
+        expect(expansions, isA<List<Expansion>>());
+        expect(expansions.length, 2);
+        expect(expansions.first.name, 'Dominaria');
+        expect(expansions.first.code, 'dom');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getExpansions(),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('getMyExpansions', () {
+      test(
+        'should return list of expansions from inventory on success',
+        () async {
+          final file = File('test/fixtures/get_expansions.json');
+          final jsonContent = await file.readAsString();
+
+          final mockResponse = MockResponse();
+          when(() => mockResponse.statusCode).thenReturn(200);
+          when(() => mockResponse.body).thenReturn(jsonContent);
+          when(
+            () => httpClient.get(any(), headers: any(named: 'headers')),
+          ).thenAnswer((_) async => mockResponse);
+
+          final expansions = await cardTraderClient.getMyExpansions();
+
+          expect(expansions, isA<List<Expansion>>());
+          expect(expansions.length, 2);
+        },
+      );
+
+      test('should call /expansions/export endpoint', () async {
+        final file = File('test/fixtures/get_expansions.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getMyExpansions();
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.first as Uri;
+        expect(uri.path, contains('/expansions/export'));
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getMyExpansions(),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
   });
 }

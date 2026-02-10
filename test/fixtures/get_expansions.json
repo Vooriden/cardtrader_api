@@ -1,0 +1,14 @@
+[
+  {
+    "id": 123,
+    "game_id": 1,
+    "code": "dom",
+    "name": "Dominaria"
+  },
+  {
+    "id": 456,
+    "game_id": 1,
+    "code": "m21",
+    "name": "Core Set 2021"
+  }
+]

@@ -138,6 +138,75 @@ class CardTraderClient {
         .toList();
   }
 
+  // ========== EXPANSIONS ==========
+
+  /// **GET**  /expansions
+  ///
+  /// Retrieves the list of all expansions.
+  ///
+  /// Expansions are collections of products released together,
+  /// such as "Dominaria" or "Core Set 2021" in Magic: the Gathering.
+  ///
+  /// Example response:
+  /// ```json
+  /// [
+  ///   {
+  ///     "id": 20,
+  ///     "game_id": 1,
+  ///     "code": "dom",
+  ///     "name": "Dominaria"
+  ///   }
+  /// ]
+  /// ```
+  Future<List<Expansion>> getExpansions() async {
+    final response = await _get('/expansions');
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return (json as List<dynamic>)
+        .map((e) => Expansion.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// **GET**  /expansions/export
+  ///
+  /// Retrieves the list of expansions that you have in your inventory.
+  ///
+  /// This returns only expansions where you have products listed.
+  ///
+  /// Example response:
+  /// ```json
+  /// [
+  ///   {
+  ///     "id": 123,
+  ///     "game_id": 1,
+  ///     "code": "dom",
+  ///     "name": "Dominaria"
+  ///   }
+  /// ]
+  /// ```
+  Future<List<Expansion>> getMyExpansions() async {
+    final response = await _get('/expansions/export');
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return (json as List<dynamic>)
+        .map((e) => Expansion.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   // ========== PRIVATE METHODS ==========
 
   Future<http.Response> _get(
