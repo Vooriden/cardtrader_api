@@ -77,6 +77,30 @@ void main() async {
     }
     print('');
 
+    // ========== GET BLUEPRINTS ==========
+    print('=== Blueprints (first expansion, first 5) ===');
+    if (expansions.isNotEmpty) {
+      final firstExpansionId = expansions.first.id;
+      final blueprints = await client.getBlueprintsByExpansion(
+        firstExpansionId,
+      );
+      for (final blueprint in blueprints.take(5)) {
+        print('- ${blueprint.name} (ID: ${blueprint.id})');
+        if (blueprint.imageUrl != null) {
+          print('  Image: ${blueprint.imageUrl}');
+        }
+        if (blueprint.editableProperties.isNotEmpty) {
+          print(
+            '  Properties: ${blueprint.editableProperties.map((p) => p.name).join(', ')}',
+          );
+        }
+      }
+      if (blueprints.length > 5) {
+        print('  ... and ${blueprints.length - 5} more blueprints');
+      }
+    }
+    print('');
+
     // ========== GET MY EXPANSIONS ==========
     print('=== My Expansions (from inventory) ===');
     final myExpansions = await client.getMyExpansions();

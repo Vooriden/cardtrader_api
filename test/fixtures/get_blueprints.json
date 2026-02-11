@@ -1,0 +1,171 @@
+[
+  {
+    "id": 203562,
+    "name": "Fable of the Mirror-Breaker // Reflection of Kiki-Jiki",
+    "version": "",
+    "game_id": 1,
+    "category_id": 1,
+    "expansion_id": 2921,
+    "fixed_properties": {
+      "mtg_rarity": "Rare",
+      "collector_number": "141"
+    },
+    "editable_properties": [
+      {
+        "name": "condition",
+        "type": "string",
+        "default_value": "Near Mint",
+        "possible_values": [
+          "Near Mint",
+          "Slightly Played",
+          "Moderately Played",
+          "Played",
+          "Poor"
+        ]
+      },
+      {
+        "name": "mtg_language",
+        "type": "string",
+        "default_value": "en",
+        "possible_values": [
+          "en",
+          "fr",
+          "de",
+          "it",
+          "jp",
+          "kr",
+          "pt",
+          "ru",
+          "es",
+          "zh-CN",
+          "zh-TW"
+        ]
+      },
+      {
+        "name": "mtg_foil",
+        "type": "boolean",
+        "default_value": "false",
+        "possible_values": [true, false]
+      },
+      {
+        "name": "signed",
+        "type": "boolean",
+        "default_value": "false",
+        "possible_values": [true, false]
+      },
+      {
+        "name": "altered",
+        "type": "boolean",
+        "default_value": "false",
+        "possible_values": [true, false]
+      }
+    ],
+    "card_market_ids": [607389],
+    "tcg_player_id": 262222,
+    "scryfall_id": "24c0d87b-0049-4beb-b9cb-6f813b7aa7dc",
+    "image_url": "https://cardtrader.com/uploads/blueprints/image/203562/preview_fable-of-the-mirror-breaker-reflection-of-kiki-jiki-kamigawa-neon-dynasty.jpg",
+    "image": {
+      "url": "/uploads/blueprints/image/203562/fable-of-the-mirror-breaker-reflection-of-kiki-jiki-kamigawa-neon-dynasty.jpg",
+      "show": {
+        "url": "/uploads/blueprints/image/203562/show_fable-of-the-mirror-breaker-reflection-of-kiki-jiki-kamigawa-neon-dynasty.jpg"
+      },
+      "preview": {
+        "url": "/uploads/blueprints/image/203562/preview_fable-of-the-mirror-breaker-reflection-of-kiki-jiki-kamigawa-neon-dynasty.jpg"
+      },
+      "social": {
+        "url": "/uploads/blueprints/image/203562/social_fable-of-the-mirror-breaker-reflection-of-kiki-jiki-kamigawa-neon-dynasty.jpg"
+      }
+    },
+    "back_image": {
+      "url": "/uploads/blueprints/back_image/203562/fable-of-the-mirror-breaker-reflection-of-kiki-jiki-kamigawa-neon-dynasty.jpg",
+      "show": {
+        "url": "/uploads/blueprints/back_image/203562/show_fable-of-the-mirror-breaker-reflection-of-kiki-jiki-kamigawa-neon-dynasty.jpg"
+      },
+      "preview": {
+        "url": "/uploads/blueprints/back_image/203562/preview_fable-of-the-mirror-breaker-reflection-of-kiki-jiki-kamigawa-neon-dynasty.jpg"
+      },
+      "social": {
+        "url": "/uploads/blueprints/back_image/203562/social_fable-of-the-mirror-breaker-reflection-of-kiki-jiki-kamigawa-neon-dynasty.jpg"
+      }
+    }
+  },
+  {
+    "id": 203565,
+    "name": "Reality Heist",
+    "version": "",
+    "game_id": 1,
+    "category_id": 1,
+    "expansion_id": 2921,
+    "fixed_properties": {
+      "mtg_rarity": "Uncommon",
+      "collector_number": "075"
+    },
+    "editable_properties": [
+      {
+        "name": "condition",
+        "type": "string",
+        "default_value": "Near Mint",
+        "possible_values": [
+          "Near Mint",
+          "Slightly Played",
+          "Moderately Played",
+          "Played",
+          "Poor"
+        ]
+      },
+      {
+        "name": "mtg_language",
+        "type": "string",
+        "default_value": "en",
+        "possible_values": [
+          "en",
+          "fr",
+          "de",
+          "it",
+          "jp",
+          "kr",
+          "pt",
+          "ru",
+          "es",
+          "zh-CN",
+          "zh-TW"
+        ]
+      },
+      {
+        "name": "mtg_foil",
+        "type": "boolean",
+        "default_value": "false",
+        "possible_values": [true, false]
+      },
+      {
+        "name": "signed",
+        "type": "boolean",
+        "default_value": "false",
+        "possible_values": [true, false]
+      },
+      {
+        "name": "altered",
+        "type": "boolean",
+        "default_value": "false",
+        "possible_values": [true, false]
+      }
+    ],
+    "card_market_ids": [607392],
+    "tcg_player_id": 262430,
+    "scryfall_id": "5bc954d7-322a-45b8-9e25-6e9a97fbde61",
+    "image_url": "https://cardtrader.com/uploads/blueprints/image/203565/preview_reality-heist-kamigawa-neon-dynasty.jpg",
+    "image": {
+      "url": "/uploads/blueprints/image/203565/reality-heist-kamigawa-neon-dynasty.jpg",
+      "show": {
+        "url": "/uploads/blueprints/image/203565/show_reality-heist-kamigawa-neon-dynasty.jpg"
+      },
+      "preview": {
+        "url": "/uploads/blueprints/image/203565/preview_reality-heist-kamigawa-neon-dynasty.jpg"
+      },
+      "social": {
+        "url": "/uploads/blueprints/image/203565/social_reality-heist-kamigawa-neon-dynasty.jpg"
+      }
+    },
+    "back_image": null
+  }
+]

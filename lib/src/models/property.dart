@@ -2,9 +2,9 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'property.g.dart';
 
-/// Represents a property that can be applied to a category.
+/// Represents a property that can be applied to an object.
 ///
-/// Properties define characteristics that products in a category
+/// Properties define characteristics that a product or card
 /// can have, such as condition, language, or edition.
 @JsonSerializable()
 class Property {
@@ -14,6 +14,10 @@ class Property {
   /// The data type of the property.
   final String type;
 
+  /// The default value for this property, if any.
+  @JsonKey(name: 'default_value')
+  final String? defaultValue;
+
   /// List of possible values for this property.
   @JsonKey(name: 'possible_values')
   final List<dynamic> possibleValues;
@@ -22,6 +26,7 @@ class Property {
   Property({
     required this.name,
     required this.type,
+    this.defaultValue,
     required this.possibleValues,
   });
 

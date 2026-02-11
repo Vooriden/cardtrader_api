@@ -285,5 +285,74 @@ void main() {
         );
       });
     });
+
+    group('getBlueprintsByExpansion', () {
+      test('should return list of blueprints on success', () async {
+        final file = File('test/fixtures/get_blueprints.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final blueprints = await cardTraderClient.getBlueprintsByExpansion(
+          2921,
+        );
+
+        expect(blueprints, isA<List<Blueprint>>());
+        expect(blueprints.length, 2);
+        expect(
+          blueprints.first.name,
+          'Fable of the Mirror-Breaker // Reflection of Kiki-Jiki',
+        );
+        expect(blueprints.first.version, '');
+        expect(blueprints.first.expansionId, 2921);
+        expect(blueprints.first.editableProperties.length, 5);
+        expect(blueprints.first.image, isNotNull);
+        expect(blueprints.first.backImage, isNotNull);
+        expect(blueprints.first.fixedProperties, isNotNull);
+        expect(blueprints.first.fixedProperties!['mtg_rarity'], 'Rare');
+      });
+
+      test('should pass expansionId as query parameter', () async {
+        final file = File('test/fixtures/get_blueprints.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getBlueprintsByExpansion(123);
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.first as Uri;
+        expect(uri.path, contains('/blueprints/export'));
+        expect(uri.queryParameters['expansion_id'], '123');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getBlueprintsByExpansion(123),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
   });
 }

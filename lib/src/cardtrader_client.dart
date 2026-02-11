@@ -207,6 +207,96 @@ class CardTraderClient {
         .toList();
   }
 
+  // ========== BLUEPRINTS ==========
+
+  /// **GET**  /blueprints/export
+  ///
+  /// Retrieves blueprints for a specific expansion.
+  ///
+  /// Blueprints define the basic information about a card or product,
+  /// including its name, associated expansion, category, and editable properties.
+  ///
+  /// [expansionId] - Required expansion ID to get blueprints for.
+  ///
+  /// Example response:
+  /// ```json
+  /// [
+  ///   {
+  ///     "id": 39063,
+  ///     "name": "Lightning Bolt",
+  ///     "version": null,
+  ///     "game_id": 1,
+  ///     "category_id": 1,
+  ///     "expansion_id": 404,
+  ///     "fixed_properties": {
+  ///       "mtg_rarity": "Common",
+  ///       "collector_number": "161"
+  ///     },
+  ///     "editable_properties": [
+  ///       {
+  ///         "name": "condition",
+  ///         "type": "string",
+  ///         "default_value": "Near Mint",
+  ///         "possible_values": [
+  ///           "Near Mint",
+  ///           "Slightly Played",
+  ///           "Moderately Played",
+  ///           "Played",
+  ///           "Poor"
+  ///         ]
+  ///       },
+  ///       {
+  ///         "name": "signed",
+  ///         "type": "boolean",
+  ///         "default_value": "false",
+  ///         "possible_values": [true, false]
+  ///       },
+  ///       {
+  ///         "name": "altered",
+  ///         "type": "boolean",
+  ///         "default_value": "false",
+  ///         "possible_values": [true, false]
+  ///       }
+  ///     ],
+  ///     "card_market_ids": [5395],
+  ///     "tcg_player_id": 1174,
+  ///     "scryfall_id": "d573ef03-4730-45aa-93dd-e45ac1dbaf4a",
+  ///     "image_url": "https://cardtrader.com/uploads/blueprints/image/39063/preview_lightning-bolt-limited-edition-alpha.jpg",
+  ///     "image": {
+  ///       "url": "/uploads/blueprints/image/39063/lightning-bolt-limited-edition-alpha.jpg",
+  ///       "show": {
+  ///         "url": "/uploads/blueprints/image/39063/show_lightning-bolt-limited-edition-alpha.jpg"
+  ///       },
+  ///       "preview": {
+  ///         "url": "/uploads/blueprints/image/39063/preview_lightning-bolt-limited-edition-alpha.jpg"
+  ///       },
+  ///       "social": {
+  ///         "url": "/uploads/blueprints/image/39063/social_lightning-bolt-limited-edition-alpha.jpg"
+  ///       }
+  ///     },
+  ///     "back_image": null
+  ///   }
+  /// ]
+  /// ```
+  Future<List<Blueprint>> getBlueprintsByExpansion(int expansionId) async {
+    final response = await _get(
+      '/blueprints/export',
+      queryParameters: {'expansion_id': expansionId.toString()},
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return (json as List<dynamic>)
+        .map((e) => Blueprint.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   // ========== PRIVATE METHODS ==========
 
   Future<http.Response> _get(
