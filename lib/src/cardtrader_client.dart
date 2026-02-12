@@ -297,6 +297,106 @@ class CardTraderClient {
         .toList();
   }
 
+  // ========== MARKETPLACE ==========
+
+  /// **GET**  /marketplace/products
+  ///
+  /// Retrieves marketplace products by expansion or blueprint.
+  ///
+  /// At least one of [expansionId] or [blueprintId] is required.
+  /// Returns a map where keys are blueprint IDs (as strings)
+  /// and values are lists of products for that blueprint.
+  ///
+  /// [expansionId] - Filter products by expansion ID.
+  /// [blueprintId] - Filter products by blueprint ID.
+  /// [foil] - Optional filter for foil products.
+  /// [language] - Optional filter by language (2-letter code like 'en', 'it').
+  ///
+  /// Example response:
+  /// ```json
+  /// {
+  ///   "3138": [
+  ///     {
+  ///       "id": 302179007,
+  ///       "blueprint_id": 3138,
+  ///       "name_en": "Earl of Squirrel",
+  ///       "expansion": {
+  ///         "code": "pust",
+  ///         "id": 34,
+  ///         "name_en": "Unstable Promos"
+  ///       },
+  ///       "price_cents": 20,
+  ///       "price_currency": "EUR",
+  ///       "quantity": 1,
+  ///       "description": "",
+  ///       "properties_hash": {
+  ///         "condition": "Near Mint",
+  ///         "mtg_foil": true,
+  ///         "mtg_language": "it"
+  ///       },
+  ///       "graded": false,
+  ///       "on_vacation": false,
+  ///       "user": {
+  ///         "id": 7343,
+  ///         "username": "Astaroth",
+  ///         "country_code": "IT",
+  ///         "can_sell_via_hub": false
+  ///       },
+  ///       "price": {
+  ///         "cents": 20,
+  ///         "currency": "EUR",
+  ///         "currency_symbol": "€",
+  ///         "formatted": "€0.20"
+  ///       }
+  ///     }
+  ///   ]
+  /// }
+  /// ```
+  Future<Map<String, List<MarketplaceProduct>>> getMarketplaceProducts({
+    int? expansionId,
+    int? blueprintId,
+    bool? foil,
+    String? language,
+  }) async {
+    final queryParameters = <String, String>{};
+    if (expansionId != null) {
+      queryParameters['expansion_id'] = expansionId.toString();
+    }
+    if (blueprintId != null) {
+      queryParameters['blueprint_id'] = blueprintId.toString();
+    }
+    if (foil != null) {
+      queryParameters['foil'] = foil.toString();
+    }
+    if (language != null) {
+      queryParameters['language'] = language;
+    }
+
+    final response = await _get(
+      '/marketplace/products',
+      queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final data = json as Map<String, dynamic>;
+    final result = <String, List<MarketplaceProduct>>{};
+
+    data.forEach((key, value) {
+      result[key] = (value as List<dynamic>)
+          .map((e) => MarketplaceProduct.fromJson(e as Map<String, dynamic>))
+          .toList();
+    });
+
+    return result;
+  }
+
   // ========== PRIVATE METHODS ==========
 
   Future<http.Response> _get(

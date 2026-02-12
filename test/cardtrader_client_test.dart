@@ -314,7 +314,7 @@ void main() {
         expect(blueprints.first.image, isNotNull);
         expect(blueprints.first.backImage, isNotNull);
         expect(blueprints.first.fixedProperties, isNotNull);
-        expect(blueprints.first.fixedProperties!['mtg_rarity'], 'Rare');
+        expect(blueprints.first.fixedProperties['mtg_rarity'], 'Rare');
       });
 
       test('should pass expansionId as query parameter', () async {
@@ -350,6 +350,119 @@ void main() {
 
         await expectLater(
           cardTraderClient.getBlueprintsByExpansion(123),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('getMarketplaceProducts', () {
+      test('should return map of products on success', () async {
+        final file = File('test/fixtures/get_marketplace_products.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final products = await cardTraderClient.getMarketplaceProducts(
+          expansionId: 34,
+        );
+
+        expect(products, isA<Map<String, List<MarketplaceProduct>>>());
+        expect(products.keys.length, 1);
+        expect(products['3138'], isNotNull);
+        expect(products['3138']!.length, 1);
+        expect(products['3138']!.first.nameEn, 'Earl of Squirrel');
+        expect(products['3138']!.first.price.cents, 20);
+        expect(products['3138']!.first.price.formatted, '€0.20');
+        expect(products['3138']!.first.user.username, 'Astaroth');
+        expect(products['3138']!.first.expansion.nameEn, 'Unstable Promos');
+      });
+
+      test('should pass expansionId as query parameter', () async {
+        final file = File('test/fixtures/get_marketplace_products.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getMarketplaceProducts(expansionId: 34);
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.first as Uri;
+        expect(uri.path, contains('/marketplace/products'));
+        expect(uri.queryParameters['expansion_id'], '34');
+      });
+
+      test('should pass blueprintId as query parameter', () async {
+        final file = File('test/fixtures/get_marketplace_products.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getMarketplaceProducts(blueprintId: 3138);
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.first as Uri;
+        expect(uri.queryParameters['blueprint_id'], '3138');
+      });
+
+      test('should pass all optional parameters', () async {
+        final file = File('test/fixtures/get_marketplace_products.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getMarketplaceProducts(
+          expansionId: 34,
+          foil: true,
+          language: 'en',
+        );
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.first as Uri;
+        expect(uri.queryParameters['expansion_id'], '34');
+        expect(uri.queryParameters['foil'], 'true');
+        expect(uri.queryParameters['language'], 'en');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getMarketplaceProducts(expansionId: 34),
           throwsA(isA<CardTraderException>()),
         );
       });

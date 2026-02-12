@@ -70,7 +70,9 @@ void main() async {
     print('=== Expansions ===');
     final expansions = await client.getExpansions();
     for (final expansion in expansions.take(5)) {
-      print('- ${expansion.name} [${expansion.code}] (ID: ${expansion.id})');
+      print(
+        '- ${expansion.displayName} [${expansion.code}] (ID: ${expansion.id})',
+      );
     }
     if (expansions.length > 5) {
       print('  ... and ${expansions.length - 5} more expansions');
@@ -101,19 +103,41 @@ void main() async {
     }
     print('');
 
-    // ========== GET MY EXPANSIONS ==========
-    print('=== My Expansions (from inventory) ===');
-    final myExpansions = await client.getMyExpansions();
-    if (myExpansions.isEmpty) {
-      print('No expansions in your inventory.');
-    } else {
-      for (final expansion in myExpansions.take(5)) {
-        print('- ${expansion.name} [${expansion.code}]');
-      }
-      if (myExpansions.length > 5) {
-        print('  ... and ${myExpansions.length - 5} more expansions');
+    // ========== GET MARKETPLACE PRODUCTS ==========
+    print('=== Marketplace Products (first expansion, first 3) ===');
+    if (expansions.isNotEmpty) {
+      final firstExpansionId = expansions.first.id;
+      final products = await client.getMarketplaceProducts(
+        expansionId: firstExpansionId,
+      );
+      if (products.isEmpty) {
+        print('No products found in marketplace for this expansion.');
+      } else {
+        var count = 0;
+        for (final entry in products.entries) {
+          if (count >= 3) break;
+          final blueprintProducts = entry.value;
+          if (blueprintProducts.isNotEmpty) {
+            final product = blueprintProducts.first;
+            print('- ${product.nameEn}');
+            print('  Price: ${product.price}');
+            print(
+              '  Seller: ${product.user.username} (${product.user.countryCode ?? 'N/A'})',
+            );
+            print('  Quantity: ${product.quantity}');
+            count++;
+          }
+        }
+        final totalProducts = products.values.fold<int>(
+          0,
+          (sum, list) => sum + list.length,
+        );
+        if (totalProducts > 3) {
+          print('  ... and ${totalProducts - 3} more products');
+        }
       }
     }
+    print('');
 
     print('');
     print('Done!');

@@ -10,16 +10,18 @@ Expansion _$ExpansionFromJson(Map<String, dynamic> json) =>
     $checkedCreate('Expansion', json, ($checkedConvert) {
       final val = Expansion(
         id: $checkedConvert('id', (v) => (v as num).toInt()),
-        gameId: $checkedConvert('game_id', (v) => (v as num).toInt()),
+        gameId: $checkedConvert('game_id', (v) => (v as num?)?.toInt()),
         code: $checkedConvert('code', (v) => v as String),
-        name: $checkedConvert('name', (v) => v as String),
+        name: $checkedConvert('name', (v) => v as String?),
+        nameEn: $checkedConvert('name_en', (v) => v as String?),
       );
       return val;
-    }, fieldKeyMap: const {'gameId': 'game_id'});
+    }, fieldKeyMap: const {'gameId': 'game_id', 'nameEn': 'name_en'});
 
 Map<String, dynamic> _$ExpansionToJson(Expansion instance) => <String, dynamic>{
   'id': instance.id,
-  'game_id': instance.gameId,
+  'game_id': ?instance.gameId,
   'code': instance.code,
-  'name': instance.name,
+  'name': ?instance.name,
+  'name_en': ?instance.nameEn,
 };

@@ -12,21 +12,38 @@ class Expansion {
   final int id;
 
   /// The ID of the game this expansion belongs to.
+  /// May be null in some API responses (e.g., marketplace products).
   @JsonKey(name: 'game_id')
-  final int gameId;
+  final int? gameId;
 
   /// The code/abbreviation for the expansion (e.g., "dom" for Dominaria).
   final String code;
 
   /// The full name of the expansion.
-  final String name;
+  /// Used in the /expansions endpoint.
+  ///
+  /// Note: This field may be null in marketplace product responses, where [nameEn] is used instead.
+  /// Prefer using [displayName] to get the appropriate name based on the context.
+  final String? name;
+
+  /// The English name of the expansion.
+  /// Used in marketplace product responses.
+  ///
+  /// Note: This field may be null in the /expansions endpoint, where [name] is used instead.
+  /// Prefer using [displayName] to get the appropriate name based on the context.
+  @JsonKey(name: 'name_en')
+  final String? nameEn;
+
+  /// Returns the display name, preferring [name] over [nameEn].
+  String get displayName => name ?? nameEn ?? '';
 
   /// Constructs an [Expansion] with the given details.
   Expansion({
     required this.id,
-    required this.gameId,
+    this.gameId,
     required this.code,
-    required this.name,
+    this.name,
+    this.nameEn,
   });
 
   /// Creates an [Expansion] from a JSON map.

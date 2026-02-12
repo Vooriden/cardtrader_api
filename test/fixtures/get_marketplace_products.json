@@ -1,0 +1,48 @@
+{
+  "3138": [
+    {
+      "id": 302179007,
+      "blueprint_id": 3138,
+      "name_en": "Earl of Squirrel",
+      "expansion": {
+        "code": "pust",
+        "id": 34,
+        "name_en": "Unstable Promos"
+      },
+      "price_cents": 20,
+      "price_currency": "EUR",
+      "quantity": 1,
+      "description": "",
+      "properties_hash": {
+        "condition": "Near Mint",
+        "mtg_card_colors": "G",
+        "tournament_legal": true,
+        "collector_number": "108",
+        "cmc": "6.0",
+        "signed": false,
+        "mtg_foil": true,
+        "mtg_language": "it",
+        "altered": false,
+        "mtg_rarity": "Rare"
+      },
+      "graded": false,
+      "on_vacation": false,
+      "user": {
+        "country_code": "IT",
+        "too_many_request_for_cancel_as_seller": false,
+        "user_type": "normal",
+        "can_sell_sealed_with_ct_zero": false,
+        "max_sellable_in24h_quantity": null,
+        "id": 7343,
+        "username": "Astaroth",
+        "can_sell_via_hub": false
+      },
+      "price": {
+        "cents": 20,
+        "currency": "EUR",
+        "currency_symbol": "€",
+        "formatted": "€0.20"
+      }
+    }
+  ]
+}
