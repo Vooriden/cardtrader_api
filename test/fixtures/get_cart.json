@@ -1,0 +1,128 @@
+{
+  "id": 12345678,
+  "total": {
+    "cents": 3452,
+    "currency": "EUR"
+  },
+  "subtotal": {
+    "cents": 3452,
+    "currency": "EUR"
+  },
+  "safeguard_fee_amount": {
+    "cents": 0,
+    "currency": "USD"
+  },
+  "ct_zero_fee_amount": {
+    "cents": 0,
+    "currency": "USD"
+  },
+  "payment_method_fee_fixed_amount": {
+    "cents": 35,
+    "currency": "EUR"
+  },
+  "payment_method_fee_percentage_amount": {
+    "cents": 173,
+    "currency": "EUR"
+  },
+  "shipping_cost": {
+    "cents": 0,
+    "currency": "EUR"
+  },
+  "subcarts": [
+    {
+      "id": 123,
+      "seller": {
+        "id": 123,
+        "username": "supervendor"
+      },
+      "via_cardtrader_zero": false,
+      "cart_items": [
+        {
+          "quantity": 1,
+          "price_cents": 800,
+          "price_currency": "EUR",
+          "product": {
+            "id": 384880761,
+            "name_en": "Hallowed Fountain"
+          }
+        }
+      ]
+    },
+    {
+      "id": 456,
+      "seller": {
+        "id": 34089,
+        "username": "Ct connect"
+      },
+      "via_cardtrader_zero": true,
+      "cart_items": [
+        {
+          "quantity": 1,
+          "price_cents": 814,
+          "price_currency": "EUR",
+          "product": {
+            "id": 389959084,
+            "name_en": "Hallowed Fountain"
+          }
+        },
+        {
+          "quantity": 1,
+          "price_cents": 886,
+          "price_currency": "EUR",
+          "product": {
+            "id": 390679252,
+            "name_en": "Hallowed Fountain"
+          }
+        },
+        {
+          "quantity": 1,
+          "price_cents": 33,
+          "price_currency": "EUR",
+          "product": {
+            "id": 242355358,
+            "name_en": "Leechridden Swamp"
+          }
+        }
+      ]
+    },
+    {
+      "id": 789,
+      "seller": {
+        "id": 60804,
+        "username": "another vendor"
+      },
+      "via_cardtrader_zero": false,
+      "cart_items": [
+        {
+          "quantity": 1,
+          "price_cents": 919,
+          "price_currency": "EUR",
+          "product": {
+            "id": 390271032,
+            "name_en": "Hallowed Fountain"
+          }
+        }
+      ]
+    }
+  ],
+  "billing_address": null,
+  "shipping_address": {
+    "id": 39645,
+    "user_id": 12345678,
+    "name": "Some User",
+    "street": "Via Roma 1",
+    "zip": "00000",
+    "city": "Roma",
+    "state_or_province": "RM",
+    "country_code": "IT",
+    "phone": "+391234567890",
+    "keep_original": true,
+    "default_billing_address": false,
+    "default_shipping_address": true,
+    "latitude": null,
+    "longitude": null,
+    "note": null,
+    "created_at": "2021-03-20T23:18:52.000Z",
+    "updated_at": "2024-07-30T19:00:08.000Z"
+  }
+}

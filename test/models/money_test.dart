@@ -51,6 +51,27 @@ void main() {
 
         expect(money.cents, -500);
       });
+
+      test('parses JSON with currency_iso instead of currency', () {
+        final jsonCurrencyIso = {"cents": 250, "currency_iso": "GBP"};
+
+        final money = Money.fromJson(jsonCurrencyIso);
+
+        expect(money.cents, 250);
+        expect(money.currency, 'GBP');
+      });
+
+      test('prefers currency over currency_iso when both are present', () {
+        final jsonBoth = {
+          "cents": 100,
+          "currency": "EUR",
+          "currency_iso": "USD",
+        };
+
+        final money = Money.fromJson(jsonBoth);
+
+        expect(money.currency, 'EUR');
+      });
     });
 
     group('toJson', () {

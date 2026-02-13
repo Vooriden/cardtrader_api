@@ -6,12 +6,18 @@ part 'money.g.dart';
 ///
 /// Money values are stored as cents (integer) with a currency code.
 /// This allows for precise calculations without floating-point errors.
+///
+/// The API may return the currency code as either `currency` or
+/// `currency_iso`. Both are normalized into the [currency] field.
 @JsonSerializable()
 class Money {
   /// The amount in cents (e.g., 1000 = 10.00).
   final int cents;
 
   /// The currency code (e.g., "EUR", "USD").
+  ///
+  /// Reads from `currency` if present, otherwise falls back to `currency_iso`.
+  @JsonKey(readValue: _readCurrency)
   final String currency;
 
   /// The currency symbol (e.g., "€", "$").
@@ -44,4 +50,10 @@ class Money {
   /// otherwise falling back to a default format of "amount currency".
   @override
   String toString() => formatted ?? '${amount.toStringAsFixed(2)} $currency';
+
+  /// Reads the currency value from the JSON map.
+  ///
+  /// Falls back to `currency_iso` if `currency` is not present.
+  static Object? _readCurrency(Map<dynamic, dynamic> json, String key) =>
+      json['currency'] ?? json['currency_iso'];
 }

@@ -467,5 +467,209 @@ void main() {
         );
       });
     });
+
+    group('getCart', () {
+      test('should return cart on success', () async {
+        final file = File('test/fixtures/get_cart.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final cart = await cardTraderClient.getCart();
+
+        expect(cart, isA<Cart>());
+        expect(cart.id, 12345678);
+        expect(cart.subcarts.length, 3);
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getCart(),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('addToCart', () {
+      test('should add item to cart successfully', () async {
+        final file = File('test/fixtures/get_cart.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final cart = await cardTraderClient.addToCart(
+          productId: 123,
+          quantity: 2,
+          viaCardtraderZero: false,
+        );
+
+        expect(cart, isA<Cart>());
+      });
+
+      test('should send correct body parameters', () async {
+        final file = File('test/fixtures/get_cart.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.addToCart(
+          productId: 123,
+          quantity: 2,
+          viaCardtraderZero: true,
+        );
+
+        final captured = verify(
+          () => httpClient.post(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: captureAny(named: 'body'),
+          ),
+        ).captured;
+
+        final body = jsonDecode(captured[1] as String);
+        expect(body['product_id'], 123);
+        expect(body['quantity'], 2);
+        expect(body['via_cardtrader_zero'], true);
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.addToCart(
+            productId: 123,
+            quantity: 1,
+            viaCardtraderZero: false,
+          ),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('removeFromCart', () {
+      test('should remove item from cart successfully', () async {
+        final file = File('test/fixtures/get_cart.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final cart = await cardTraderClient.removeFromCart(
+          productId: 123,
+          quantity: 1,
+        );
+
+        expect(cart, isA<Cart>());
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.removeFromCart(productId: 123, quantity: 1),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('purchaseCart', () {
+      test('should purchase cart successfully', () async {
+        final file = File('test/fixtures/get_cart.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final cart = await cardTraderClient.purchaseCart();
+
+        expect(cart, isA<Cart>());
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.purchaseCart(),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
   });
 }

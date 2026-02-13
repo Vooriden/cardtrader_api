@@ -10,7 +10,11 @@ Money _$MoneyFromJson(Map<String, dynamic> json) =>
     $checkedCreate('Money', json, ($checkedConvert) {
       final val = Money(
         cents: $checkedConvert('cents', (v) => (v as num).toInt()),
-        currency: $checkedConvert('currency', (v) => v as String),
+        currency: $checkedConvert(
+          'currency',
+          (v) => v as String,
+          readValue: Money._readCurrency,
+        ),
         currencySymbol: $checkedConvert('currency_symbol', (v) => v as String?),
         formatted: $checkedConvert('formatted', (v) => v as String?),
       );

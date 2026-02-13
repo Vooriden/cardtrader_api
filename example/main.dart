@@ -105,6 +105,7 @@ void main() async {
 
     // ========== GET MARKETPLACE PRODUCTS ==========
     print('=== Marketplace Products (first expansion, first 3) ===');
+    int? sampleProductId;
     if (expansions.isNotEmpty) {
       final firstExpansionId = expansions.first.id;
       final products = await client.getMarketplaceProducts(
@@ -119,6 +120,8 @@ void main() async {
           final blueprintProducts = entry.value;
           if (blueprintProducts.isNotEmpty) {
             final product = blueprintProducts.first;
+            // Store first product ID for cart operations example
+            sampleProductId ??= product.id;
             print('- ${product.nameEn}');
             print('  Price: ${product.price}');
             print(
@@ -137,6 +140,83 @@ void main() async {
         }
       }
     }
+    print('');
+
+    // ========== CART OPERATIONS ==========
+    print('=== Cart Operations ===');
+
+    // Get current cart
+    print('Fetching current cart...');
+    final cart = await client.getCart();
+    print('Cart ID: ${cart.id}');
+    print('Subtotal: ${cart.subtotal.formatted}');
+    print('Total: ${cart.total.formatted}');
+    print('Number of subcarts: ${cart.subcarts.length}');
+
+    if (cart.subcarts.isNotEmpty) {
+      print('');
+      print('Cart contents:');
+      for (var i = 0; i < cart.subcarts.length; i++) {
+        final subcart = cart.subcarts[i];
+        print('  Subcart ${i + 1}:');
+        if (subcart.seller != null) {
+          print('    Seller: ${subcart.seller!.username}');
+        }
+        print('    Via CardTrader Zero: ${subcart.viaCardtraderZero ?? false}');
+        print('    Items: ${subcart.cartItems.length}');
+        for (final item in subcart.cartItems) {
+          print('      - ${item.product.nameEn} x${item.quantity}');
+          print('        Price: ${item.priceCents} ${item.priceCurrency}');
+        }
+      }
+    } else {
+      print('Cart is empty.');
+    }
+
+    if (cart.shippingAddress != null) {
+      print('Shipping Address:');
+      print('  ${cart.shippingAddress!.name}');
+      print('  ${cart.shippingAddress!.street}');
+      print('  ${cart.shippingAddress!.zip} ${cart.shippingAddress!.city}');
+      print('  ${cart.shippingAddress!.countryCode}');
+    }
+
+    print('Fees:');
+    print('  Shipping: ${cart.shippingCost.formatted}');
+    print(
+      '  Payment method (fixed): ${cart.paymentMethodFeeFixedAmount.formatted}',
+    );
+    print(
+      '  Payment method (percentage): ${cart.paymentMethodFeePercentageAmount.formatted}',
+    );
+    print('  CT Zero fee: ${cart.ctZeroFeeAmount.formatted}');
+    print('  Safeguard fee: ${cart.safeguardFeeAmount.formatted}');
+    print('');
+
+    // Add item to cart using product from marketplace
+    if (sampleProductId != null) {
+      print('Adding item to cart (Product ID: $sampleProductId)...');
+      final updatedCart = await client.addToCart(
+        productId: sampleProductId,
+        quantity: 1,
+        viaCardtraderZero: false,
+      );
+      print('Item added. New cart total: ${updatedCart.total.toString()}');
+      print('');
+
+      // Remove item from cart
+      print('Removing item from cart (Product ID: $sampleProductId)...');
+      final cartAfterRemoval = await client.removeFromCart(
+        productId: sampleProductId,
+        quantity: 1,
+      );
+      print(
+        'Item removed. New cart total: ${cartAfterRemoval.total.toString()}',
+      );
+    } else {
+      print('No product ID available for cart operations example.');
+    }
+
     print('');
 
     print('');

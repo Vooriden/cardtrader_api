@@ -397,6 +397,142 @@ class CardTraderClient {
     return result;
   }
 
+  // ========== CART ==========
+
+  /// **GET**  /cart
+  ///
+  /// Retrieves the current cart status.
+  ///
+  /// Returns the cart with all subcarts (grouped by seller),
+  /// items, totals, fees, and addresses.
+  ///
+  /// Example response:
+  /// ```json
+  /// {
+  ///   "id": 12345,
+  ///   "subcarts": [
+  ///     {
+  ///       "id": 1,
+  ///       "seller": {"id": 789, "username": "cardshop"},
+  ///       "cart_items": [
+  ///         {
+  ///           "quantity": 2,
+  ///           "price_cents": 500,
+  ///           "price_currency": "EUR",
+  ///           "product": {"id": 123, "name_en": "Lightning Bolt"}
+  ///         }
+  ///       ]
+  ///     }
+  ///   ],
+  ///   "subtotal": {"cents": 1000, "currency": "EUR"},
+  ///   "shipping_cost": {"cents": 200, "currency": "EUR"}
+  /// }
+  /// ```
+  Future<Cart> getCart() async {
+    final response = await _get('/cart');
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Cart.fromJson(json as Map<String, dynamic>);
+  }
+
+  /// **POST**  /cart/add
+  ///
+  /// Adds a product to the cart.
+  ///
+  /// [productId] - The ID of the product to add.
+  /// [quantity] - The quantity to add.
+  /// [viaCardtraderZero] - Whether to purchase via CardTrader Zero.
+  /// [billingAddress] - Optional billing address.
+  /// [shippingAddress] - Optional shipping address.
+  ///
+  /// Returns the updated cart.
+  Future<Cart> addToCart({
+    required int productId,
+    required int quantity,
+    required bool viaCardtraderZero,
+    Address? billingAddress,
+    Address? shippingAddress,
+  }) async {
+    final data = <String, dynamic>{
+      'product_id': productId,
+      'quantity': quantity,
+      'via_cardtrader_zero': viaCardtraderZero,
+    };
+
+    if (billingAddress != null) {
+      data['billing_address'] = billingAddress.toJson();
+    }
+    if (shippingAddress != null) {
+      data['shipping_address'] = shippingAddress.toJson();
+    }
+
+    final response = await _post('/cart/add', body: data);
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Cart.fromJson(json as Map<String, dynamic>);
+  }
+
+  /// **POST**  /cart/remove
+  ///
+  /// Removes a product from the cart.
+  ///
+  /// [productId] - The ID of the product to remove.
+  /// [quantity] - The quantity to remove.
+  ///
+  /// Returns the updated cart.
+  Future<Cart> removeFromCart({
+    required int productId,
+    required int quantity,
+  }) async {
+    final response = await _post(
+      '/cart/remove',
+      body: {'product_id': productId, 'quantity': quantity},
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Cart.fromJson(json as Map<String, dynamic>);
+  }
+
+  /// **POST**  /cart/purchase
+  ///
+  /// Purchases the current cart.
+  ///
+  /// Returns the cart with purchase confirmation details.
+  Future<Cart> purchaseCart() async {
+    final response = await _post('/cart/purchase');
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Cart.fromJson(json as Map<String, dynamic>);
+  }
+
   // ========== PRIVATE METHODS ==========
 
   Future<http.Response> _get(
@@ -413,6 +549,26 @@ class CardTraderClient {
     };
 
     final response = await _httpClient.get(uri, headers: headers);
+    return response;
+  }
+
+  Future<http.Response> _post(
+    String endpoint, {
+    Map<String, dynamic>? body,
+  }) async {
+    final uri = Uri.parse('$_baseUrl$endpoint');
+
+    final headers = <String, String>{
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $_apiKey',
+    };
+
+    final response = await _httpClient.post(
+      uri,
+      headers: headers,
+      body: body != null ? jsonEncode(body) : null,
+    );
     return response;
   }
 }

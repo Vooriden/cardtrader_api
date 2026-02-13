@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Dart: Run example",
+      "type": "dart",
+      "request": "launch",
+      "program": "example/main.dart"
+    },
+    {
+      "name": "Dart: Run all Tests",
+      "type": "dart",
+      "request": "launch",
+      "program": "./test/"
+    },
+    {
+      "name": "Dart: build_runner",
+      "type": "dart",
+      "request": "launch",
+      "program": "build_runner",
+      "args": ["build", "--delete-conflicting-outputs"]
+    }
+  ]
+}
