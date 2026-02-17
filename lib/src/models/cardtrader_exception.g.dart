@@ -13,12 +13,18 @@ CardTraderException _$CardTraderExceptionFromJson(Map<String, dynamic> json) =>
       ($checkedConvert) {
         final val = CardTraderException(
           statusCode: $checkedConvert('status_code', (v) => (v as num).toInt()),
-          errorCode: $checkedConvert('error_code', (v) => v as String),
+          errorCode: $checkedConvert('error_code', (v) => v as String?),
           extra: $checkedConvert(
             'extra',
-            (v) => ExtraMessage.fromJson(v as Map<String, dynamic>),
+            (v) => v == null
+                ? null
+                : ExtraMessage.fromJson(v as Map<String, dynamic>),
           ),
-          requestId: $checkedConvert('request_id', (v) => v as String),
+          requestId: $checkedConvert('request_id', (v) => v as String?),
+          errors: $checkedConvert(
+            'errors',
+            (v) => (v as List<dynamic>?)?.map((e) => e as String).toList(),
+          ),
         );
         return val;
       },
@@ -33,9 +39,10 @@ Map<String, dynamic> _$CardTraderExceptionToJson(
   CardTraderException instance,
 ) => <String, dynamic>{
   'status_code': instance.statusCode,
-  'error_code': instance.errorCode,
-  'extra': instance.extra.toJson(),
-  'request_id': instance.requestId,
+  'error_code': ?instance.errorCode,
+  'extra': ?instance.extra?.toJson(),
+  'request_id': ?instance.requestId,
+  'errors': ?instance.errors,
 };
 
 ExtraMessage _$ExtraMessageFromJson(Map<String, dynamic> json) =>

@@ -13,6 +13,10 @@ part 'cardtrader_exception.g.dart';
 /// ## Error 404: Not Found
 /// If a resource is not present, API responds with a 404
 /// Not Found error.
+///
+/// ## Error 422: Unprocessable Entity
+/// If validation fails, the API may respond with a 422 error
+/// containing an `errors` array instead of the standard format.
 @JsonSerializable()
 class CardTraderException implements Exception {
   /// The HTTP status code returned by the API.
@@ -21,35 +25,57 @@ class CardTraderException implements Exception {
 
   /// The error code returned by the API.
   /// Values are like `unauthorized`, `not_found`, etc.
+  /// May be `null` when the API returns an `errors` array format.
   @JsonKey(name: 'error_code')
-  final String errorCode;
+  final String? errorCode;
 
   /// Additional information about the error.
   /// This usually contains a human-readable message.
-  final ExtraMessage extra;
+  /// May be `null` when the API returns an `errors` array format.
+  final ExtraMessage? extra;
 
   /// The unique request ID for tracking purposes.
+  /// May be `null` when the API returns an `errors` array format.
   @JsonKey(name: 'request_id')
-  final String requestId;
+  final String? requestId;
+
+  /// A list of validation error messages.
+  /// Present when the API returns the `{"errors": [...]}` format
+  /// (e.g., 422 Unprocessable Entity).
+  final List<String>? errors;
 
   /// Constructs a [CardTraderException] with the given details.
   CardTraderException({
     required this.statusCode,
-    required this.errorCode,
-    required this.extra,
-    required this.requestId,
+    this.errorCode,
+    this.extra,
+    this.requestId,
+    this.errors,
   });
 
   /// Creates a [CardTraderException] from a JSON map.
   factory CardTraderException.fromJson(
     Map<String, dynamic> json,
     int statusCode,
-  ) => _$CardTraderExceptionFromJson(
-    json..putIfAbsent('status_code', () => statusCode),
-  );
+  ) {
+    final data = Map<String, dynamic>.from(json);
+    data.putIfAbsent('status_code', () => statusCode);
+    return _$CardTraderExceptionFromJson(data);
+  }
 
   /// Converts the [CardTraderException] to a JSON map.
   Map<String, dynamic> toJson() => _$CardTraderExceptionToJson(this);
+
+  /// Returns a human-readable error message.
+  ///
+  /// If the error contains an `errors` array, the messages are joined.
+  /// Otherwise, the `extra.message` is returned.
+  String get message {
+    if (errors != null && errors!.isNotEmpty) {
+      return errors!.join(', ');
+    }
+    return extra?.message ?? 'Unknown error';
+  }
 }
 
 @JsonSerializable()

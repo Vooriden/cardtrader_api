@@ -10,5 +10,7 @@ export 'expansion.dart';
 export 'game.dart';
 export 'marketplace_product.dart';
 export 'money.dart';
+export 'paginated_response.dart';
 export 'property.dart';
 export 'user.dart';
+export 'wishlist.dart';

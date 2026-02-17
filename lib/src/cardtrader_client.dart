@@ -533,6 +533,142 @@ class CardTraderClient {
     return Cart.fromJson(json as Map<String, dynamic>);
   }
 
+  // ========== WISHLISTS ==========
+
+  /// **GET**  /wishlists
+  ///
+  /// Returns a paginated list of wishlists for the authenticated user.
+  ///
+  /// [gameId] - Optional filter by game ID.
+  /// [page] - The page number to retrieve (defaults to 1).
+  /// [limit] - The maximum number of wishlists per page (defaults to 20).
+  ///
+  /// Returns a [PaginatedResponse] containing [Wishlist] objects.
+  Future<PaginatedResponse<Wishlist>> getWishlists({
+    int? gameId,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final queryParams = <String, String>{
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+    if (gameId != null) queryParams['game_id'] = gameId.toString();
+
+    final response = await _get('/wishlists', queryParameters: queryParams);
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final wishlists = (json as List<dynamic>)
+        .map((e) => Wishlist.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    return PaginatedResponse<Wishlist>(
+      page: page,
+      limit: limit,
+      items: wishlists,
+    );
+  }
+
+  /// **GET**  /wishlists/{id}
+  ///
+  /// Returns the details of a specific wishlist, including its items.
+  ///
+  /// [id] - The wishlist ID.
+  ///
+  /// Returns a [Wishlist] object with items populated.
+  Future<Wishlist> getWishlist(int id) async {
+    final response = await _get('/wishlists/$id');
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Wishlist.fromJson(json as Map<String, dynamic>);
+  }
+
+  /// **POST**  /wishlists
+  ///
+  /// Creates a new wishlist.
+  ///
+  /// The API requires at least one item. Provide items via either
+  /// [deckItemsFromText] (a text-based deck list) or [deckItems]
+  /// (a list of [DeckItem] objects). At least one must be provided.
+  ///
+  /// [name] - The name of the wishlist.
+  /// [gameId] - The game ID this wishlist belongs to.
+  /// [isPublic] - Whether the wishlist is publicly visible.
+  /// [deckItemsFromText] - A text-based deck list to parse into items.
+  /// [deckItems] - A list of [DeckItem] to add to the wishlist.
+  ///
+  /// Throws [ArgumentError] if neither [deckItemsFromText] nor [deckItems]
+  /// is provided.
+  ///
+  /// Returns the created [Wishlist].
+  Future<Wishlist> createWishlist({
+    required String name,
+    required int gameId,
+    bool? isPublic,
+    String? deckItemsFromText,
+    List<DeckItem>? deckItems,
+  }) async {
+    if (deckItemsFromText == null && (deckItems == null || deckItems.isEmpty)) {
+      throw ArgumentError(
+        'At least one of deckItemsFromText or deckItems must be provided. '
+        'The API requires at least one item.',
+      );
+    }
+
+    final data = <String, dynamic>{'name': name, 'game_id': gameId};
+
+    if (isPublic != null) data['public'] = isPublic;
+    if (deckItemsFromText != null) {
+      data['deck_items_from_text_deck'] = deckItemsFromText;
+    }
+    if (deckItems != null) {
+      data['deck_items_attributes'] = deckItems.map((e) => e.toJson()).toList();
+    }
+
+    final response = await _post('/wishlists', body: data);
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Wishlist.fromJson(json as Map<String, dynamic>);
+  }
+
+  /// **DELETE**  /wishlists/{id}
+  ///
+  /// Deletes a wishlist.
+  ///
+  /// [id] - The wishlist ID.
+  Future<void> deleteWishlist(int id) async {
+    final response = await _delete('/wishlists/$id');
+
+    if (response.statusCode != 200) {
+      final json = jsonDecode(response.body);
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+  }
+
   // ========== PRIVATE METHODS ==========
 
   Future<http.Response> _get(
@@ -569,6 +705,18 @@ class CardTraderClient {
       headers: headers,
       body: body != null ? jsonEncode(body) : null,
     );
+    return response;
+  }
+
+  Future<http.Response> _delete(String endpoint) async {
+    final uri = Uri.parse('$_baseUrl$endpoint');
+
+    final headers = <String, String>{
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $_apiKey',
+    };
+
+    final response = await _httpClient.delete(uri, headers: headers);
     return response;
   }
 }

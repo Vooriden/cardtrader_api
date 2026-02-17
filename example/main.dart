@@ -81,12 +81,15 @@ void main() async {
 
     // ========== GET BLUEPRINTS ==========
     print('=== Blueprints (first expansion, first 5) ===');
+    Blueprint? sampleBlueprint;
     if (expansions.isNotEmpty) {
       final firstExpansionId = expansions.first.id;
       final blueprints = await client.getBlueprintsByExpansion(
         firstExpansionId,
       );
       for (final blueprint in blueprints.take(5)) {
+        // Store first blueprint for wishlist example
+        sampleBlueprint ??= blueprint;
         print('- ${blueprint.name} (ID: ${blueprint.id})');
         if (blueprint.imageUrl != null) {
           print('  Image: ${blueprint.imageUrl}');
@@ -218,6 +221,63 @@ void main() async {
     }
 
     print('');
+
+    // ========== WISHLIST OPERATIONS ==========
+    print('=== Wishlist Operations ===');
+
+    // Get wishlists (paginated)
+    print('Fetching wishlists...');
+    final wishlistsResponse = await client.getWishlists();
+    print('Page ${wishlistsResponse.page}, Limit ${wishlistsResponse.limit}');
+    print('Wishlists found: ${wishlistsResponse.items.length}');
+    for (final wishlist in wishlistsResponse.items) {
+      print(
+        '- ${wishlist.name} (ID: ${wishlist.id}, Game: ${wishlist.gameId})',
+      );
+      print('  Public: ${wishlist.isPublic}');
+    }
+    print('');
+
+    // Create a wishlist (at least one item is required)
+    print('Creating a new wishlist...');
+    if (sampleBlueprint != null) {
+      final newWishlist = await client.createWishlist(
+        name: 'Example Wishlist',
+        gameId: games.array.first.id,
+        isPublic: false,
+        deckItems: [
+          DeckItem(
+            quantity: 1,
+            metaName: sampleBlueprint.name,
+            blueprintId: sampleBlueprint.id,
+          ),
+        ],
+      );
+      print('Created wishlist: ${newWishlist.name} (ID: ${newWishlist.id})');
+      print('');
+
+      // Get wishlist details
+      print('Fetching wishlist details...');
+      final wishlistDetail = await client.getWishlist(newWishlist.id);
+      print('Wishlist: ${wishlistDetail.name}');
+      print('Items: ${wishlistDetail.items?.length ?? 0}');
+      if (wishlistDetail.items != null) {
+        for (final item in wishlistDetail.items!) {
+          print(
+            '  - ${item.metaName} x${item.quantity}'
+            '${item.blueprintId != null ? ' (Blueprint: ${item.blueprintId})' : ''}',
+          );
+        }
+      }
+      print('');
+
+      // Delete the wishlist
+      print('Deleting wishlist...');
+      await client.deleteWishlist(newWishlist.id);
+      print('Wishlist deleted.');
+    } else {
+      print('No blueprint available to create a wishlist.');
+    }
 
     print('');
     print('Done!');

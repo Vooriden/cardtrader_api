@@ -671,5 +671,271 @@ void main() {
         );
       });
     });
+
+    group('getWishlists', () {
+      test('should return paginated wishlists on success', () async {
+        final file = File('test/fixtures/get_wishlists.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final result = await cardTraderClient.getWishlists();
+
+        expect(result, isA<PaginatedResponse<Wishlist>>());
+        expect(result.page, 1);
+        expect(result.limit, 20);
+        expect(result.items.length, 2);
+        expect(result.items[0].name, 'My MTG Wishlist');
+        expect(result.items[1].name, 'Yu-Gi-Oh Cards');
+      });
+
+      test('should pass gameId, page and limit as query parameters', () async {
+        final file = File('test/fixtures/get_wishlists.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final result = await cardTraderClient.getWishlists(
+          gameId: 1,
+          page: 2,
+          limit: 10,
+        );
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.last as Uri;
+        expect(uri.queryParameters['game_id'], '1');
+        expect(uri.queryParameters['page'], '2');
+        expect(uri.queryParameters['limit'], '10');
+        expect(result.page, 2);
+        expect(result.limit, 10);
+      });
+
+      test('should use default page and limit values', () async {
+        final file = File('test/fixtures/get_wishlists.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getWishlists();
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.last as Uri;
+        expect(uri.queryParameters['page'], '1');
+        expect(uri.queryParameters['limit'], '20');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getWishlists(),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('getWishlist', () {
+      test('should return wishlist with items on success', () async {
+        final file = File('test/fixtures/get_wishlist.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final wishlist = await cardTraderClient.getWishlist(1);
+
+        expect(wishlist, isA<Wishlist>());
+        expect(wishlist.id, 1);
+        expect(wishlist.name, 'My MTG Wishlist');
+        expect(wishlist.items, isNotNull);
+        expect(wishlist.items!.length, 2);
+        expect(wishlist.items![0].metaName, 'Lightning Bolt');
+        expect(wishlist.items![1].metaName, 'Black Lotus');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(404);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getWishlist(999),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('createWishlist', () {
+      test('should create wishlist successfully', () async {
+        final file = File('test/fixtures/get_wishlist.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(201);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final wishlist = await cardTraderClient.createWishlist(
+          name: 'My MTG Wishlist',
+          gameId: 1,
+          isPublic: true,
+          deckItemsFromText: '2 Lightning Bolt',
+        );
+
+        expect(wishlist, isA<Wishlist>());
+        expect(wishlist.name, 'My MTG Wishlist');
+      });
+
+      test('should send correct body parameters', () async {
+        final file = File('test/fixtures/get_wishlist.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(201);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.createWishlist(
+          name: 'Test Wishlist',
+          gameId: 1,
+          isPublic: true,
+          deckItemsFromText: '4 Lightning Bolt',
+        );
+
+        final captured = verify(
+          () => httpClient.post(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: captureAny(named: 'body'),
+          ),
+        ).captured;
+
+        final body = jsonDecode(captured[1] as String);
+        expect(body['name'], 'Test Wishlist');
+        expect(body['game_id'], 1);
+        expect(body['public'], true);
+        expect(body['deck_items_from_text_deck'], '4 Lightning Bolt');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.createWishlist(
+            name: 'Test',
+            gameId: 1,
+            deckItemsFromText: '1 Card',
+          ),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+
+      test('should throw ArgumentError when no items provided', () async {
+        expect(
+          () => cardTraderClient.createWishlist(name: 'Test', gameId: 1),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('should throw ArgumentError when deckItems is empty', () async {
+        expect(
+          () => cardTraderClient.createWishlist(
+            name: 'Test',
+            gameId: 1,
+            deckItems: [],
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+    });
+
+    group('deleteWishlist', () {
+      test('should delete wishlist successfully with 200', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn('');
+        when(
+          () => httpClient.delete(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.deleteWishlist(1);
+
+        verify(
+          () => httpClient.delete(any(), headers: any(named: 'headers')),
+        ).called(1);
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(404);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.delete(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.deleteWishlist(999),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
   });
 }

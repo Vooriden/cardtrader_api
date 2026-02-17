@@ -100,6 +100,10 @@ After calling `close()`, any further requests will throw an exception.
 
 For complete API documentation, visit the [CardTrader API documentation](https://www.cardtrader.com/en/docs/api).
 
+## Known Limitations
+
+- **Shipping Methods** (`GET /shipping_methods`): This endpoint is currently not available — the CardTrader API returns `404 Not Found`. It will be implemented once the endpoint becomes functional.
+
 ## License
 
 See the [LICENSE](LICENSE) file for details.
