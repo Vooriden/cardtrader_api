@@ -1,0 +1,22 @@
+{
+  "result": "ok",
+  "warnings": {},
+  "resource": {
+    "id": 789000,
+    "quantity": 7,
+    "bundle_size": 1,
+    "description": "Fresh pack",
+    "graded": 0,
+    "game_id": 1,
+    "category_id": 1,
+    "expansion_id": 404,
+    "blueprint_id": 39063,
+    "price": {
+      "cents": 450,
+      "currency": "EUR"
+    },
+    "properties": {
+      "condition": "Near Mint"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cardtrader_api/cardtrader_api.dart';
 import 'package:http/http.dart' as http;
@@ -10,7 +11,11 @@ class MockHttpClient extends Mock implements http.Client {}
 
 class MockResponse extends Mock implements http.Response {}
 
+class MockStreamedResponse extends Mock implements http.StreamedResponse {}
+
 class FakeUri extends Fake implements Uri {}
+
+class FakeBaseRequest extends Fake implements http.BaseRequest {}
 
 void main() {
   group('CardTraderClient', () {
@@ -21,6 +26,7 @@ void main() {
 
     setUpAll(() {
       registerFallbackValue(FakeUri());
+      registerFallbackValue(FakeBaseRequest());
     });
 
     setUp(() {
@@ -933,6 +939,772 @@ void main() {
 
         await expectLater(
           cardTraderClient.deleteWishlist(999),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    // ========== INVENTORY MANAGEMENT ==========
+
+    group('getMyProducts', () {
+      test('should return list of products on success', () async {
+        final file = File('test/fixtures/get_my_products.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final products = await cardTraderClient.getMyProducts();
+
+        expect(products, isA<List<Product>>());
+        expect(products.length, 2);
+        expect(products[0].id, 123456);
+        expect(products[0].nameEn, 'Lightning Bolt');
+        expect(products[0].quantity, 3);
+        expect(products[0].priceCents, 500);
+        expect(products[1].id, 123457);
+        expect(products[1].nameEn, 'Counterspell');
+      });
+
+      test('should pass blueprint_id query parameter', () async {
+        final file = File('test/fixtures/get_my_products.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getMyProducts(blueprintId: 39063);
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.queryParameters['blueprint_id'], '39063');
+      });
+
+      test('should pass expansion_id query parameter', () async {
+        final file = File('test/fixtures/get_my_products.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getMyProducts(expansionId: 404);
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.queryParameters['expansion_id'], '404');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(401);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getMyProducts(),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('createProduct', () {
+      test('should create a product and return it', () async {
+        final file = File('test/fixtures/create_product.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(201);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final product = await cardTraderClient.createProduct(
+          blueprintId: 39063,
+          price: 4.50,
+          quantity: 2,
+        );
+
+        expect(product, isA<Product>());
+        expect(product.id, 789000);
+        expect(product.nameEn, isNull);
+        expect(product.quantity, 2);
+        expect(product.priceCents, 450);
+        expect(product.expansionId, 404);
+      });
+
+      test('should send correct body parameters', () async {
+        final file = File('test/fixtures/create_product.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(201);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.createProduct(
+          blueprintId: 39063,
+          price: 4.50,
+          quantity: 2,
+          description: 'Test',
+          graded: true,
+          properties: {'condition': 'Near Mint'},
+        );
+
+        final captured = verify(
+          () => httpClient.post(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: captureAny(named: 'body'),
+          ),
+        ).captured;
+
+        final body = jsonDecode(captured[1] as String);
+        expect(body['blueprint_id'], 39063);
+        expect(body['price'], 4.50);
+        expect(body['quantity'], 2);
+        expect(body['description'], 'Test');
+        expect(body['graded'], true);
+        expect(body['properties'], {'condition': 'Near Mint'});
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(422);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.createProduct(
+            blueprintId: 39063,
+            price: 4.50,
+            quantity: 2,
+          ),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('updateProduct', () {
+      test('should update a product and return it', () async {
+        final file = File('test/fixtures/update_product.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final product = await cardTraderClient.updateProduct(
+          id: 789000,
+          price: 6.00,
+          quantity: 5,
+        );
+
+        expect(product, isA<Product>());
+        expect(product.id, 789000);
+        expect(product.quantity, 5);
+        expect(product.priceCents, 600);
+      });
+
+      test('should send correct body parameters', () async {
+        final file = File('test/fixtures/update_product.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.updateProduct(
+          id: 789000,
+          price: 6.00,
+          description: 'Updated',
+          userDataField: 'custom-data',
+        );
+
+        final captured = verify(
+          () => httpClient.put(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: captureAny(named: 'body'),
+          ),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.path, contains('/products/789000'));
+
+        final body = jsonDecode(captured[1] as String);
+        expect(body['price'], 6.00);
+        expect(body['description'], 'Updated');
+        expect(body['user_data_field'], 'custom-data');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(404);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.updateProduct(id: 999, price: 1.00),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('deleteProduct', () {
+      test('should delete product successfully with 200', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn('');
+        when(
+          () => httpClient.delete(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.deleteProduct(123456);
+
+        verify(
+          () => httpClient.delete(any(), headers: any(named: 'headers')),
+        ).called(1);
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(404);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.delete(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.deleteProduct(999),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('incrementProduct', () {
+      test(
+        'should increment product quantity and return updated product',
+        () async {
+          final file = File('test/fixtures/increment_product.json');
+          final jsonContent = await file.readAsString();
+
+          final mockResponse = MockResponse();
+          when(() => mockResponse.statusCode).thenReturn(200);
+          when(() => mockResponse.body).thenReturn(jsonContent);
+          when(
+            () => httpClient.post(
+              any(),
+              headers: any(named: 'headers'),
+              body: any(named: 'body'),
+            ),
+          ).thenAnswer((_) async => mockResponse);
+
+          final product = await cardTraderClient.incrementProduct(
+            id: 789000,
+            deltaQuantity: 5,
+          );
+
+          expect(product, isA<Product>());
+          expect(product.id, 789000);
+          expect(product.quantity, 7);
+        },
+      );
+
+      test('should send correct body with delta_quantity', () async {
+        final file = File('test/fixtures/increment_product.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.incrementProduct(id: 789000, deltaQuantity: -2);
+
+        final captured = verify(
+          () => httpClient.post(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: captureAny(named: 'body'),
+          ),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.path, contains('/products/789000/increment'));
+
+        final body = jsonDecode(captured[1] as String);
+        expect(body['delta_quantity'], -2);
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(422);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.incrementProduct(id: 999, deltaQuantity: 1),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    // ========== BATCH OPERATIONS ==========
+
+    group('bulkCreateProducts', () {
+      test('should return job UUID on success', () async {
+        final file = File('test/fixtures/bulk_operation.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final jobUuid = await cardTraderClient.bulkCreateProducts([
+          ProductRequest(blueprintId: 39063, price: 4.50, quantity: 2),
+          ProductRequest(blueprintId: 39064, price: 12.00, quantity: 1),
+        ]);
+
+        expect(jobUuid, '550e8400-e29b-41d4-a716-446655440000');
+      });
+
+      test('should send correct body', () async {
+        final file = File('test/fixtures/bulk_operation.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.bulkCreateProducts([
+          ProductRequest(blueprintId: 39063, price: 4.50, quantity: 2),
+        ]);
+
+        final captured = verify(
+          () => httpClient.post(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: captureAny(named: 'body'),
+          ),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.path, contains('/products/bulk_create'));
+
+        final body = jsonDecode(captured[1] as String);
+        expect(body['products'], isA<List>());
+        expect(body['products'].length, 1);
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(422);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.bulkCreateProducts(<ProductRequest>[]),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('bulkUpdateProducts', () {
+      test('should return job UUID on success', () async {
+        final file = File('test/fixtures/bulk_operation.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final jobUuid = await cardTraderClient.bulkUpdateProducts([
+          ProductUpdateRequest(id: 123456, price: 5.00),
+        ]);
+
+        expect(jobUuid, '550e8400-e29b-41d4-a716-446655440000');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(422);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.bulkUpdateProducts(<ProductUpdateRequest>[]),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('bulkDeleteProducts', () {
+      test('should return job UUID on success', () async {
+        final file = File('test/fixtures/bulk_operation.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final jobUuid = await cardTraderClient.bulkDeleteProducts([
+          123456,
+          123457,
+        ]);
+
+        expect(jobUuid, '550e8400-e29b-41d4-a716-446655440000');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(422);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.bulkDeleteProducts(<int>[]),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('getJobStatus', () {
+      test('should return job on success', () async {
+        final file = File('test/fixtures/get_job_status.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final job = await cardTraderClient.getJobStatus(
+          '550e8400-e29b-41d4-a716-446655440000',
+        );
+
+        expect(job, isA<Job>());
+        expect(job.uuid, '550e8400-e29b-41d4-a716-446655440000');
+        expect(job.state, 'completed');
+        expect(job.isCompleted, true);
+        expect(job.spawnedChildren, 3);
+        expect(job.stats.ok, 2);
+        expect(job.stats.warning, 1);
+        expect(job.stats.error, 0);
+        expect(job.results.length, 3);
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(404);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getJobStatus('invalid-uuid'),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    // ========== PRODUCT IMAGES ==========
+
+    group('uploadProductImage', () {
+      test('should upload image bytes and return image ID', () async {
+        final imageBytes = Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0]);
+
+        final streamedResponse = http.StreamedResponse(
+          Stream.value(utf8.encode(jsonEncode({'id': 98765}))),
+          200,
+        );
+
+        when(
+          () => httpClient.send(any()),
+        ).thenAnswer((_) async => streamedResponse);
+
+        final imageId = await cardTraderClient.uploadProductImage(
+          id: 789000,
+          imageBytes: imageBytes,
+          filename: 'card.jpg',
+        );
+
+        expect(imageId, 98765);
+
+        final captured = verify(() => httpClient.send(captureAny())).captured;
+
+        final request = captured[0] as http.MultipartRequest;
+        expect(request.method, 'POST');
+        expect(request.url.path, contains('/products/789000/upload_image'));
+        expect(request.files.length, 1);
+        expect(request.files.first.field, 'uploaded_image[image]');
+        expect(request.files.first.filename, 'card.jpg');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final imageBytes = Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0]);
+
+        final streamedResponse = http.StreamedResponse(
+          Stream.value(utf8.encode(jsonError)),
+          422,
+        );
+
+        when(
+          () => httpClient.send(any()),
+        ).thenAnswer((_) async => streamedResponse);
+
+        await expectLater(
+          cardTraderClient.uploadProductImage(
+            id: 789000,
+            imageBytes: imageBytes,
+            filename: 'card.jpg',
+          ),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('uploadProductImageFromUrl', () {
+      test('should upload image from URL and return image ID', () async {
+        final file = File('test/fixtures/upload_image.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final imageId = await cardTraderClient.uploadProductImageFromUrl(
+          id: 789000,
+          imageUrl: 'https://example.com/card.jpg',
+        );
+
+        expect(imageId, 98765);
+      });
+
+      test('should send correct body with remote_image_url', () async {
+        final file = File('test/fixtures/upload_image.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.uploadProductImageFromUrl(
+          id: 789000,
+          imageUrl: 'https://example.com/card.jpg',
+        );
+
+        final captured = verify(
+          () => httpClient.post(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: captureAny(named: 'body'),
+          ),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.path, contains('/products/789000/upload_image'));
+
+        final body = jsonDecode(captured[1] as String);
+        expect(
+          body['uploaded_image']['remote_image_url'],
+          'https://example.com/card.jpg',
+        );
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(422);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.uploadProductImageFromUrl(
+            id: 789000,
+            imageUrl: 'https://example.com/card.jpg',
+          ),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('removeProductImage', () {
+      test('should remove product image successfully', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn('');
+        when(
+          () => httpClient.delete(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.removeProductImage(789000);
+
+        final captured = verify(
+          () => httpClient.delete(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.path, contains('/products/789000/upload_image'));
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(404);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.delete(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.removeProductImage(999),
           throwsA(isA<CardTraderException>()),
         );
       });

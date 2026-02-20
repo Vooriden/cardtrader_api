@@ -1,0 +1,22 @@
+{
+  "result": "ok",
+  "warnings": {},
+  "resource": {
+    "id": 789000,
+    "quantity": 5,
+    "bundle_size": 1,
+    "description": "Updated description",
+    "graded": 0,
+    "game_id": 1,
+    "category_id": 1,
+    "expansion_id": 404,
+    "blueprint_id": 39063,
+    "price": {
+      "cents": 600,
+      "currency": "EUR"
+    },
+    "properties": {
+      "condition": "Slightly Played"
+    }
+  }
+}

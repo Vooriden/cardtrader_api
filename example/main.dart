@@ -79,6 +79,8 @@ void main() async {
     }
     print('');
 
+    sleep(Duration(seconds: 2));
+
     // ========== GET BLUEPRINTS ==========
     print('=== Blueprints (first expansion, first 5) ===');
     Blueprint? sampleBlueprint;
@@ -105,6 +107,8 @@ void main() async {
       }
     }
     print('');
+
+    sleep(Duration(seconds: 2));
 
     // ========== GET MARKETPLACE PRODUCTS ==========
     print('=== Marketplace Products (first expansion, first 3) ===');
@@ -144,6 +148,8 @@ void main() async {
       }
     }
     print('');
+
+    sleep(Duration(seconds: 2));
 
     // ========== CART OPERATIONS ==========
     print('=== Cart Operations ===');
@@ -222,6 +228,8 @@ void main() async {
 
     print('');
 
+    sleep(Duration(seconds: 2));
+
     // ========== WISHLIST OPERATIONS ==========
     print('=== Wishlist Operations ===');
 
@@ -277,6 +285,162 @@ void main() async {
       print('Wishlist deleted.');
     } else {
       print('No blueprint available to create a wishlist.');
+    }
+
+    print('');
+
+    sleep(Duration(seconds: 2));
+
+    // ========== INVENTORY MANAGEMENT ==========
+    print('=== Inventory Management ===');
+
+    // Get your products
+    print('Fetching your products...');
+    final myProducts = await client.getMyProducts();
+    print('Your products: ${myProducts.length}');
+    for (final product in myProducts.take(5)) {
+      print('- ${product.nameEn} (ID: ${product.id})');
+      print(
+        '  Price: ${product.price} ${product.priceCurrency} | Qty: ${product.quantity}',
+      );
+      print('  Blueprint ID: ${product.blueprintId}');
+    }
+    if (myProducts.length > 5) {
+      print('  ... and ${myProducts.length - 5} more products');
+    }
+    print('');
+
+    // Filter products by expansion
+    if (expansions.isNotEmpty) {
+      print('Fetching products for first expansion...');
+      final filteredProducts = await client.getMyProducts(
+        expansionId: expansions.first.id,
+      );
+      print('Products in expansion: ${filteredProducts.length}');
+      print('');
+    }
+
+    // Create a product (requires a valid blueprint)
+    if (sampleBlueprint != null) {
+      print('Creating a product...');
+      final newProduct = await client.createProduct(
+        blueprintId: sampleBlueprint.id,
+        price: 5.00,
+        quantity: 3,
+        description: 'Example product listing',
+        properties: {'condition': 'Near Mint'},
+      );
+      print('Created product: ${sampleBlueprint.name} (ID: ${newProduct.id})');
+      print('Price: ${newProduct.price} ${newProduct.priceCurrency}');
+      print('');
+
+      // Update the product
+      print('Updating product price and quantity...');
+      final updatedProduct = await client.updateProduct(
+        id: newProduct.id,
+        price: 6.50,
+        quantity: 5,
+        description: 'Updated description',
+      );
+      print('Updated product: ${updatedProduct.nameEn}');
+      print(
+        'New price: ${updatedProduct.price} ${updatedProduct.priceCurrency}',
+      );
+      print('New quantity: ${updatedProduct.quantity}');
+      print('');
+
+      // Increment product quantity
+      print('Incrementing product quantity by 2...');
+      final incrementedProduct = await client.incrementProduct(
+        id: newProduct.id,
+        deltaQuantity: 2,
+      );
+      print('Product quantity after increment: ${incrementedProduct.quantity}');
+      print('');
+
+      // Delete the product
+      print('Deleting product...');
+      await client.deleteProduct(newProduct.id);
+      print('Product deleted.');
+      print('');
+    }
+
+    // ========== BATCH OPERATIONS ==========
+    print('=== Batch Operations ===');
+
+    if (sampleBlueprint != null) {
+      // Bulk create products
+      print('Bulk creating products...');
+      final createJobUuid = await client.bulkCreateProducts([
+        ProductRequest(
+          blueprintId: sampleBlueprint.id,
+          price: 3.00,
+          quantity: 1,
+        ),
+        ProductRequest(
+          blueprintId: sampleBlueprint.id,
+          price: 4.00,
+          quantity: 2,
+        ),
+      ]);
+      print('Bulk create job UUID: $createJobUuid');
+      print('');
+
+      // Check job status
+      print('Checking job status...');
+      var job = await client.getJobStatus(createJobUuid);
+      print('Job state: ${job.state}');
+      print(
+        'Stats: OK=${job.stats.ok}, Warning=${job.stats.warning}, Error=${job.stats.error}',
+      );
+      for (final result in job.results) {
+        print(
+          '  Result ${result.jobIndex}: ${result.result}'
+          '${result.productId != null ? ' (Product ID: ${result.productId})' : ''}',
+        );
+      }
+      print('');
+
+      while (!job.isCompleted) {
+        final previousState = job.state;
+        print(
+          'Job not completed yet. Waiting 5 seconds before checking again...',
+        );
+        await Future.delayed(Duration(seconds: 5));
+        job = await client.getJobStatus(createJobUuid);
+        if (job.state != previousState) {
+          print('Job state changed: ${job.state}');
+        } else {
+          print('Job still in state: ${job.state}');
+        }
+      }
+
+      // Bulk update products
+      if (job.results.isNotEmpty) {
+        final productIds = job.results
+            .where((r) => r.productId != null)
+            .map((r) => r.productId!)
+            .toList();
+
+        if (productIds.isNotEmpty) {
+          print('Bulk updating products...');
+          final updateJobUuid = await client.bulkUpdateProducts(
+            productIds
+                .map((id) => ProductUpdateRequest(id: id, price: 5.00))
+                .toList(),
+          );
+          print('Bulk update job UUID: $updateJobUuid');
+          print('');
+
+          // Bulk delete products
+          print('Bulk deleting products...');
+          final deleteJobUuid = await client.bulkDeleteProducts(productIds);
+          print('Bulk delete job UUID: $deleteJobUuid');
+          print('');
+        }
+      }
+    } else {
+      print('No blueprint available for batch operations example.');
     }
 
     print('');

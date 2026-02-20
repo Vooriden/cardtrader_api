@@ -1,0 +1,45 @@
+[
+  {
+    "id": 123456,
+    "name_en": "Lightning Bolt",
+    "quantity": 3,
+    "description": "Near Mint condition",
+    "price_cents": 500,
+    "price_currency": "EUR",
+    "game_id": 1,
+    "category_id": 1,
+    "blueprint_id": 39063,
+    "properties_hash": {
+      "condition": "Near Mint",
+      "mtg_language": "en"
+    },
+    "user_id": 456,
+    "graded": false,
+    "tag": "",
+    "user_data_field": "",
+    "bundle_size": 1,
+    "bundled_quantity": 3,
+    "uploaded_images": []
+  },
+  {
+    "id": 123457,
+    "name_en": "Counterspell",
+    "quantity": 1,
+    "description": "",
+    "price_cents": 1200,
+    "price_currency": "EUR",
+    "game_id": 1,
+    "category_id": 1,
+    "blueprint_id": 39064,
+    "properties_hash": {
+      "condition": "Slightly Played"
+    },
+    "user_id": 456,
+    "graded": false,
+    "tag": "sale",
+    "user_data_field": "SKU-001",
+    "bundle_size": 1,
+    "bundled_quantity": 1,
+    "uploaded_images": ["https://example.com/image1.jpg"]
+  }
+]

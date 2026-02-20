@@ -1,0 +1,30 @@
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "state": "completed",
+  "spawned_children": 3,
+  "stats": {
+    "ok": 2,
+    "warning": 1,
+    "error": 0
+  },
+  "results": [
+    {
+      "result": "ok",
+      "job_index": 0,
+      "product_id": 123456
+    },
+    {
+      "result": "ok",
+      "job_index": 1,
+      "product_id": 123457
+    },
+    {
+      "result": "warning",
+      "job_index": 2,
+      "product_id": 123458,
+      "warnings": {
+        "price": ["Price is below market average"]
+      }
+    }
+  ]
+}

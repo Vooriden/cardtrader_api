@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:cardtrader_api/src/models/models.dart';
 import 'package:http/http.dart' as http;
@@ -669,6 +670,417 @@ class CardTraderClient {
     }
   }
 
+  // ========== INVENTORY MANAGEMENT ==========
+
+  /// **GET**  /products/export
+  ///
+  /// Retrieves your listed products.
+  ///
+  /// [blueprintId] - Optional filter by blueprint ID.
+  /// [expansionId] - Optional filter by expansion ID.
+  Future<List<Product>> getMyProducts({
+    int? blueprintId,
+    int? expansionId,
+  }) async {
+    final queryParams = <String, String>{};
+    if (blueprintId != null) {
+      queryParams['blueprint_id'] = blueprintId.toString();
+    }
+    if (expansionId != null) {
+      queryParams['expansion_id'] = expansionId.toString();
+    }
+
+    final response = await _get(
+      '/products/export',
+      queryParameters: queryParams.isNotEmpty ? queryParams : null,
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return (json as List<dynamic>)
+        .map((e) => Product.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// **POST**  /products
+  ///
+  /// Creates a new product listing.
+  ///
+  /// [blueprintId] - The blueprint ID to base the product on.
+  /// [price] - The price as a double (e.g., 5.00 for €5.00).
+  /// [quantity] - The quantity to list.
+  /// [description] - Optional description.
+  /// [strictMode] - If true, the API will fail and not create a Product if you pass a wrong Property. Otherwise, it will return a warning and accept the Product, automatically fixing the wrong Property with its default value.
+  /// [userDataField] - Optional custom user data field. Visible only via API, not on CardTrader website.
+  /// [properties] - Optional properties (condition, language, foil, etc.). The keys should match the editable properties defined in the blueprint.
+  /// [graded] - Whether the product is graded.
+  ///
+  /// Returns the created [Product].
+  Future<Product> createProduct({
+    required int blueprintId,
+    required double price,
+    required int quantity,
+    String? description,
+    bool? strictMode,
+    String? userDataField,
+    Map<String, dynamic>? properties,
+    bool? graded,
+  }) async {
+    final data = <String, dynamic>{
+      'blueprint_id': blueprintId,
+      'price': price,
+      'quantity': quantity,
+    };
+
+    if (description != null) data['description'] = description;
+    if (strictMode == true) data['error_mode'] = 'strict';
+    if (userDataField != null) data['user_data_field'] = userDataField;
+    if (properties != null) data['properties'] = properties;
+    if (graded != null) data['graded'] = graded;
+
+    final response = await _post('/products', body: data);
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final result = json as Map<String, dynamic>;
+    return Product.fromJson(result['resource'] as Map<String, dynamic>);
+  }
+
+  /// **PUT**  /products/{id}
+  ///
+  /// Updates an existing product listing.
+  ///
+  /// [id] - The product ID to update.
+  /// [price] - The new price as a double.
+  /// [quantity] - The new quantity.
+  /// [description] - The new description.
+  /// [strictMode] - If true, the update will fail if you pass a wrong value for a property. If false, invalid properties will be ignored and the update will succeed.
+  /// [userDataField] - The new custom user data field. Visible only via API, not on CardTrader website.
+  /// [properties] - The new properties. The keys should match the editable properties defined in the blueprint.
+  /// [graded] - Whether the product is graded.
+  ///
+  /// Returns the updated [Product].
+  Future<Product> updateProduct({
+    required int id,
+    double? price,
+    int? quantity,
+    String? description,
+    bool? strictMode,
+    String? userDataField,
+    Map<String, dynamic>? properties,
+    bool? graded,
+  }) async {
+    final data = <String, dynamic>{};
+
+    if (price != null) data['price'] = price;
+    if (quantity != null) data['quantity'] = quantity;
+    if (description != null) data['description'] = description;
+    if (strictMode == true) data['error_mode'] = 'strict';
+    if (userDataField != null) data['user_data_field'] = userDataField;
+    if (properties != null) data['properties'] = properties;
+    if (graded != null) data['graded'] = graded;
+
+    final response = await _put('/products/$id', body: data);
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final result = json as Map<String, dynamic>;
+    return Product.fromJson(result['resource'] as Map<String, dynamic>);
+  }
+
+  /// **DELETE**  /products/{id}
+  ///
+  /// Deletes a product listing.
+  ///
+  /// [id] - The product ID to delete.
+  Future<void> deleteProduct(int id) async {
+    final response = await _delete('/products/$id');
+
+    if (response.statusCode != 200) {
+      final json = jsonDecode(response.body);
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+  }
+
+  /// **POST**  /products/{id}/increment
+  ///
+  /// Increments or decrements the product quantity by [deltaQuantity].
+  ///
+  /// Use positive values to increment, negative values to decrement.
+  ///
+  /// [id] - The product ID.
+  /// [deltaQuantity] - The amount to change the quantity by.
+  ///
+  /// Returns the updated [Product].
+  Future<Product> incrementProduct({
+    required int id,
+    required int deltaQuantity,
+  }) async {
+    final response = await _post(
+      '/products/$id/increment',
+      body: {'delta_quantity': deltaQuantity},
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final result = json as Map<String, dynamic>;
+    return Product.fromJson(result['resource'] as Map<String, dynamic>);
+  }
+
+  // ========== PRODUCT IMAGES ==========
+
+  /// **POST**  /products/{id}/upload_image
+  ///
+  /// Uploads an image for a product from a file (bytes).
+  ///
+  /// [id] - The product ID.
+  /// [imageBytes] - The image file bytes.
+  /// [filename] - The filename for the uploaded image (e.g., "card.jpg").
+  ///
+  /// Returns the image ID as an integer.
+  Future<int> uploadProductImage({
+    required int id,
+    required Uint8List imageBytes,
+    required String filename,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/products/$id/upload_image');
+    final request = http.MultipartRequest('POST', uri)
+      ..headers['Authorization'] = 'Bearer $_apiKey'
+      ..headers['Accept'] = 'application/json'
+      ..files.add(
+        http.MultipartFile.fromBytes(
+          'uploaded_image[image]',
+          imageBytes,
+          filename: filename,
+        ),
+      );
+
+    final streamedResponse = await _httpClient.send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final result = json as Map<String, dynamic>;
+    return result['id'] as int;
+  }
+
+  /// **POST**  /products/{id}/upload_image (remote URL)
+  ///
+  /// Uploads an image for a product from a remote URL.
+  ///
+  /// [id] - The product ID.
+  /// [imageUrl] - The URL of the remote image.
+  ///
+  /// Returns the image ID as an integer.
+  Future<int> uploadProductImageFromUrl({
+    required int id,
+    required String imageUrl,
+  }) async {
+    final response = await _post(
+      '/products/$id/upload_image',
+      body: {
+        'uploaded_image': {'remote_image_url': imageUrl},
+      },
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final result = json as Map<String, dynamic>;
+    return result['id'] as int;
+  }
+
+  /// **DELETE**  /products/{id}/upload_image
+  ///
+  /// Removes the image from a product.
+  ///
+  /// [id] - The product ID.
+  Future<void> removeProductImage(int id) async {
+    final response = await _delete('/products/$id/upload_image');
+
+    if (response.statusCode != 200) {
+      final json = jsonDecode(response.body);
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+  }
+
+  // ========== BATCH OPERATIONS ==========
+
+  /// **POST**  /products/bulk_create
+  ///
+  /// Bulk creates products asynchronously.
+  ///
+  /// [products] - A list of [ProductRequest] objects specifying the products
+  /// to create. Each request must include blueprintId, price, and quantity.
+  ///
+  /// Example:
+  /// ```dart
+  /// final products = [
+  ///   ProductRequest(
+  ///     blueprintId: 39063,
+  ///     price: 5.00,
+  ///     quantity: 4,
+  ///     properties: {'condition': 'Near Mint'},
+  ///   ),
+  ///   ProductRequest(
+  ///     blueprintId: 39064,
+  ///     price: 2.50,
+  ///     quantity: 2,
+  ///   ),
+  /// ];
+  /// final jobId = await client.bulkCreateProducts(products);
+  /// ```
+  ///
+  /// Returns a job UUID string to check status via [getJobStatus].
+  Future<String> bulkCreateProducts(List<ProductRequest> products) async {
+    final response = await _post(
+      '/products/bulk_create',
+      body: {'products': products.map((p) => p.toJson()).toList()},
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200 && response.statusCode != 202) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final result = json as Map<String, dynamic>;
+    return result['job'] as String;
+  }
+
+  /// **POST**  /products/bulk_update
+  ///
+  /// Bulk updates products asynchronously.
+  ///
+  /// [products] - A list of [ProductUpdateRequest] objects specifying the
+  /// products to update. Each request must include the product id and any
+  /// fields to update.
+  ///
+  /// Example:
+  /// ```dart
+  /// final products = [
+  ///   ProductUpdateRequest(id: 123456, price: 5.00),
+  ///   ProductUpdateRequest(id: 123457, quantity: 10),
+  /// ];
+  /// final jobId = await client.bulkUpdateProducts(products);
+  /// ```
+  ///
+  /// Returns a job UUID string to check status via [getJobStatus].
+  Future<String> bulkUpdateProducts(List<ProductUpdateRequest> products) async {
+    final response = await _post(
+      '/products/bulk_update',
+      body: {'products': products.map((p) => p.toJson()).toList()},
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200 && response.statusCode != 202) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final result = json as Map<String, dynamic>;
+    return result['job'] as String;
+  }
+
+  /// **POST**  /products/bulk_destroy
+  ///
+  /// Bulk deletes products asynchronously.
+  ///
+  /// [productIds] - A list of product IDs to delete.
+  ///
+  /// Example:
+  /// ```dart
+  /// final productIds = [123456, 123457, 123458];
+  /// final jobId = await client.bulkDeleteProducts(productIds);
+  /// ```
+  ///
+  /// Returns a job UUID string to check status via [getJobStatus].
+  Future<String> bulkDeleteProducts(List<int> productIds) async {
+    final response = await _post(
+      '/products/bulk_destroy',
+      body: {
+        'products': productIds.map((id) => {'id': id}).toList(),
+      },
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200 && response.statusCode != 202) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final result = json as Map<String, dynamic>;
+    return result['job'] as String;
+  }
+
+  /// **GET**  /jobs/{uuid}
+  ///
+  /// Retrieves the status of a batch job.
+  ///
+  /// [uuid] - The job UUID returned from bulk operations.
+  ///
+  /// Returns a [Job] with current state and results.
+  Future<Job> getJobStatus(String uuid) async {
+    final response = await _get('/jobs/$uuid');
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Job.fromJson(json as Map<String, dynamic>);
+  }
+
   // ========== PRIVATE METHODS ==========
 
   Future<http.Response> _get(
@@ -701,6 +1113,26 @@ class CardTraderClient {
     };
 
     final response = await _httpClient.post(
+      uri,
+      headers: headers,
+      body: body != null ? jsonEncode(body) : null,
+    );
+    return response;
+  }
+
+  Future<http.Response> _put(
+    String endpoint, {
+    Map<String, dynamic>? body,
+  }) async {
+    final uri = Uri.parse('$_baseUrl$endpoint');
+
+    final headers = <String, String>{
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $_apiKey',
+    };
+
+    final response = await _httpClient.put(
       uri,
       headers: headers,
       body: body != null ? jsonEncode(body) : null,
