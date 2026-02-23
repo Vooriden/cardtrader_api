@@ -549,10 +549,29 @@ void main() {
           ),
         ).thenAnswer((_) async => mockResponse);
 
+        final billing = Address(
+          name: 'John Doe',
+          street: '123 Main St',
+          zip: '12345',
+          city: 'Springfield',
+          stateOrProvince: 'IL',
+          countryCode: 'US',
+        );
+        final shipping = Address(
+          name: 'Jane Doe',
+          street: '456 Oak Ave',
+          zip: '67890',
+          city: 'Shelbyville',
+          stateOrProvince: 'IL',
+          countryCode: 'US',
+        );
+
         await cardTraderClient.addToCart(
           productId: 123,
           quantity: 2,
           viaCardtraderZero: true,
+          billingAddress: billing,
+          shippingAddress: shipping,
         );
 
         final captured = verify(
@@ -567,6 +586,8 @@ void main() {
         expect(body['product_id'], 123);
         expect(body['quantity'], 2);
         expect(body['via_cardtrader_zero'], true);
+        expect(body['billing_address']['name'], 'John Doe');
+        expect(body['shipping_address']['name'], 'Jane Doe');
       });
 
       test('should throw CardTraderException on error', () async {
@@ -853,6 +874,7 @@ void main() {
           gameId: 1,
           isPublic: true,
           deckItemsFromText: '4 Lightning Bolt',
+          deckItems: [DeckItem(quantity: 4, metaName: 'Lightning Bolt')],
         );
 
         final captured = verify(
@@ -868,6 +890,8 @@ void main() {
         expect(body['game_id'], 1);
         expect(body['public'], true);
         expect(body['deck_items_from_text_deck'], '4 Lightning Bolt');
+        expect(body['deck_items_attributes'], isList);
+        expect(body['deck_items_attributes'][0]['meta_name'], 'Lightning Bolt');
       });
 
       test('should throw CardTraderException on error', () async {
@@ -1080,6 +1104,7 @@ void main() {
           description: 'Test',
           graded: true,
           properties: {'condition': 'Near Mint'},
+          userDataField: 'my-custom-data',
         );
 
         final captured = verify(
@@ -1097,6 +1122,7 @@ void main() {
         expect(body['description'], 'Test');
         expect(body['graded'], true);
         expect(body['properties'], {'condition': 'Near Mint'});
+        expect(body['user_data_field'], 'my-custom-data');
       });
 
       test('should throw CardTraderException on error', () async {
@@ -1171,6 +1197,8 @@ void main() {
           price: 6.00,
           description: 'Updated',
           userDataField: 'custom-data',
+          properties: {'condition': 'Played'},
+          graded: true,
         );
 
         final captured = verify(
@@ -1188,6 +1216,8 @@ void main() {
         expect(body['price'], 6.00);
         expect(body['description'], 'Updated');
         expect(body['user_data_field'], 'custom-data');
+        expect(body['properties'], {'condition': 'Played'});
+        expect(body['graded'], true);
       });
 
       test('should throw CardTraderException on error', () async {
