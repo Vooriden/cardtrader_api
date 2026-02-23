@@ -1739,5 +1739,617 @@ void main() {
         );
       });
     });
+
+    // ========== ORDER MANAGEMENT ==========
+
+    group('getOrders', () {
+      test('should return paginated list of orders on success', () async {
+        final file = File('test/fixtures/get_orders.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final result = await cardTraderClient.getOrders();
+
+        expect(result, isA<PaginatedResponse<Order>>());
+        expect(result.items.length, 2);
+        expect(result.items.first.id, 733733);
+        expect(result.items.first.code, '202109213e70f5');
+        expect(result.items.first.state, 'hub_pending');
+        expect(result.items.first.isHubPending, true);
+        expect(result.items.first.viaCardtraderZero, true);
+        expect(result.items.first.orderAs, 'seller');
+        expect(result.items.first.buyer, isNotNull);
+        expect(result.items.first.buyer!.username, 'buyer_user');
+        expect(result.items.first.orderItems.length, 1);
+        expect(result.items.first.orderItems.first.name, 'Celestial Cataclysm');
+        expect(result.items.first.orderShippingMethod, isNotNull);
+        expect(result.items.first.orderShippingMethod!.name, 'Priority Letter');
+      });
+
+      test('should pass all query parameters', () async {
+        final file = File('test/fixtures/get_orders.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getOrders(
+          page: 2,
+          limit: 50,
+          from: '2021-01-01',
+          to: '2021-12-31',
+          fromId: 100,
+          toId: 999,
+          state: 'paid',
+          orderAs: 'seller',
+          sort: 'date.desc',
+        );
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.first as Uri;
+        expect(uri.path, contains('/orders'));
+        expect(uri.queryParameters['page'], '2');
+        expect(uri.queryParameters['limit'], '50');
+        expect(uri.queryParameters['from'], '2021-01-01');
+        expect(uri.queryParameters['to'], '2021-12-31');
+        expect(uri.queryParameters['from_id'], '100');
+        expect(uri.queryParameters['to_id'], '999');
+        expect(uri.queryParameters['state'], 'paid');
+        expect(uri.queryParameters['order_as'], 'seller');
+        expect(uri.queryParameters['sort'], 'date.desc');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getOrders(),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('getOrder', () {
+      test('should return order details on success', () async {
+        final file = File('test/fixtures/get_order.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final order = await cardTraderClient.getOrder(733733);
+
+        expect(order, isA<Order>());
+        expect(order.id, 733733);
+        expect(order.code, '202109213e70f5');
+        expect(order.viaCardtraderZero, true);
+        expect(order.state, 'hub_pending');
+        expect(order.size, 1);
+        expect(order.orderShippingAddress, isNotNull);
+        expect(order.orderShippingAddress!.city, 'Firenze');
+        expect(order.orderBillingAddress, isNotNull);
+        expect(order.sellerTotal, isNotNull);
+        expect(order.sellerTotal!.cents, 1500);
+        expect(order.feePercentage, '5.0');
+        expect(order.packingNumber, 11);
+        expect(order.orderItems.length, 1);
+        expect(order.orderItems.first.sellerPrice, isNotNull);
+        expect(order.orderItems.first.sellerPrice!.cents, 1500);
+      });
+
+      test('should call /orders/:id endpoint', () async {
+        final file = File('test/fixtures/get_order.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getOrder(733733);
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.first as Uri;
+        expect(uri.path, contains('/orders/733733'));
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(404);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getOrder(999999),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('setOrderTrackingCode', () {
+      test('should return updated order on success', () async {
+        final file = File('test/fixtures/ship_order.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final order = await cardTraderClient.setOrderTrackingCode(
+          id: 733733,
+          trackingCode: 'ABC123XYZ',
+        );
+
+        expect(order, isA<Order>());
+        expect(order.id, 733733);
+      });
+
+      test('should send tracking_code in body', () async {
+        final file = File('test/fixtures/ship_order.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.setOrderTrackingCode(
+          id: 733733,
+          trackingCode: 'ABC123XYZ',
+        );
+
+        final captured = verify(
+          () => httpClient.put(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: captureAny(named: 'body'),
+          ),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.path, contains('/orders/733733/tracking_code'));
+
+        final body = jsonDecode(captured[1] as String);
+        expect(body['tracking_code'], 'ABC123XYZ');
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(422);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.setOrderTrackingCode(
+            id: 999999,
+            trackingCode: 'ABC',
+          ),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('shipOrder', () {
+      test('should return updated order on success', () async {
+        final file = File('test/fixtures/ship_order.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final order = await cardTraderClient.shipOrder(733733);
+
+        expect(order, isA<Order>());
+        expect(order.id, 733733);
+        expect(order.state, 'sent');
+        expect(order.isSent, true);
+        expect(order.sentAt, isNotNull);
+      });
+
+      test('should call /orders/:id/ship endpoint', () async {
+        final file = File('test/fixtures/ship_order.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.shipOrder(733733);
+
+        final captured = verify(
+          () => httpClient.put(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.path, contains('/orders/733733/ship'));
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(422);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.shipOrder(999999),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('requestOrderCancellation', () {
+      test('should return updated order on success', () async {
+        final file = File('test/fixtures/request_cancellation.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final order = await cardTraderClient.requestOrderCancellation(
+          id: 733733,
+          cancelExplanation:
+              'The item is no longer available in my inventory, I apologize for the inconvenience.',
+        );
+
+        expect(order, isA<Order>());
+        expect(order.id, 733733);
+        expect(order.state, 'request_for_cancel');
+        expect(order.isRequestForCancel, true);
+        expect(order.cancelRequester, isNotNull);
+      });
+
+      test('should send body with cancel_explanation and relist flag', () async {
+        final file = File('test/fixtures/request_cancellation.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.requestOrderCancellation(
+          id: 733733,
+          cancelExplanation:
+              'The item is no longer available in my inventory, I apologize for the inconvenience.',
+          relistIfCancelled: true,
+        );
+
+        final captured = verify(
+          () => httpClient.put(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: captureAny(named: 'body'),
+          ),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.path, contains('/orders/733733/request-cancellation'));
+
+        final body = jsonDecode(captured[1] as String);
+        expect(body['cancel_explanation'], contains('no longer available'));
+        expect(body['relist_if_cancelled'], true);
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(422);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.requestOrderCancellation(
+            id: 999999,
+            cancelExplanation: 'Too short',
+          ),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('confirmOrderCancellation', () {
+      test('should return updated order on success', () async {
+        final file = File('test/fixtures/confirm_cancellation.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        final order = await cardTraderClient.confirmOrderCancellation(
+          id: 733733,
+        );
+
+        expect(order, isA<Order>());
+        expect(order.id, 733733);
+        expect(order.state, 'canceled');
+        expect(order.isCanceled, true);
+        expect(order.cancelledAt, isNotNull);
+      });
+
+      test('should send relist_if_cancelled when provided', () async {
+        final file = File('test/fixtures/confirm_cancellation.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.confirmOrderCancellation(
+          id: 733733,
+          relistIfCancelled: true,
+        );
+
+        final captured = verify(
+          () => httpClient.put(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: captureAny(named: 'body'),
+          ),
+        ).captured;
+
+        final uri = captured[0] as Uri;
+        expect(uri.path, contains('/orders/733733/confirm-cancellation'));
+
+        final body = jsonDecode(captured[1] as String);
+        expect(body['relist_if_cancelled'], true);
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(422);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.put(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.confirmOrderCancellation(id: 999999),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    // ========== CT0 BOX ITEMS ==========
+
+    group('getCt0BoxItems', () {
+      test('should return list of CT0 box items on success', () async {
+        final file = File('test/fixtures/get_ct0_box_items.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final items = await cardTraderClient.getCt0BoxItems();
+
+        expect(items, isA<List<Ct0BoxItem>>());
+        expect(items.length, 2);
+        expect(items.first.id, 1917020);
+        expect(items.first.name, 'Deathcap Cultivator');
+        expect(items.first.pendingQuantity, 1);
+        expect(items.first.okQuantity, 0);
+        expect(items.first.seller.username, 'CardShop');
+        expect(items.first.buyerPrice.cents, 8);
+        expect(items[1].okQuantity, 2);
+        expect(items[1].arrivedAt, isNotNull);
+      });
+
+      test('should call /ct0_box_items endpoint', () async {
+        final file = File('test/fixtures/get_ct0_box_items.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getCt0BoxItems();
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.first as Uri;
+        expect(uri.path, contains('/ct0_box_items'));
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getCt0BoxItems(),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
+
+    group('getCt0BoxItem', () {
+      test('should return CT0 box item details on success', () async {
+        final file = File('test/fixtures/get_ct0_box_item.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        final item = await cardTraderClient.getCt0BoxItem(1917020);
+
+        expect(item, isA<Ct0BoxItem>());
+        expect(item.id, 1917020);
+        expect(item.name, 'Deathcap Cultivator');
+        expect(item.expansion, 'Shadows over Innistrad');
+        expect(item.pendingQuantity, 1);
+        expect(item.buyerPrice.cents, 8);
+        expect(item.formattedPrice, '€0.08');
+        expect(item.scryfallId, 'fc4aee46-ac42-4ede-ad06-906e2955a9d3');
+      });
+
+      test('should call /ct0_box_items/:id endpoint', () async {
+        final file = File('test/fixtures/get_ct0_box_item.json');
+        final jsonContent = await file.readAsString();
+
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.body).thenReturn(jsonContent);
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await cardTraderClient.getCt0BoxItem(1917020);
+
+        final captured = verify(
+          () => httpClient.get(captureAny(), headers: any(named: 'headers')),
+        ).captured;
+
+        final uri = captured.first as Uri;
+        expect(uri.path, contains('/ct0_box_items/1917020'));
+      });
+
+      test('should throw CardTraderException on error', () async {
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(404);
+        when(() => mockResponse.body).thenReturn(jsonError);
+
+        when(
+          () => httpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => mockResponse);
+
+        await expectLater(
+          cardTraderClient.getCt0BoxItem(999999),
+          throwsA(isA<CardTraderException>()),
+        );
+      });
+    });
   });
 }

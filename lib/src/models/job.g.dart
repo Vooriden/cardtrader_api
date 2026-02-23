@@ -49,11 +49,11 @@ Map<String, dynamic> _$JobResultToJson(JobResult instance) => <String, dynamic>{
 Job _$JobFromJson(Map<String, dynamic> json) =>
     $checkedCreate('Job', json, ($checkedConvert) {
       final val = Job(
-        uuid: $checkedConvert('uuid', (v) => v as String),
+        uuid: $checkedConvert('uuid', (v) => v as String?),
         state: $checkedConvert('state', (v) => v as String),
         spawnedChildren: $checkedConvert(
           'spawned_children',
-          (v) => (v as num).toInt(),
+          (v) => (v as num?)?.toInt(),
         ),
         stats: $checkedConvert(
           'stats',
@@ -70,9 +70,9 @@ Job _$JobFromJson(Map<String, dynamic> json) =>
     }, fieldKeyMap: const {'spawnedChildren': 'spawned_children'});
 
 Map<String, dynamic> _$JobToJson(Job instance) => <String, dynamic>{
-  'uuid': instance.uuid,
+  'uuid': ?instance.uuid,
   'state': instance.state,
-  'spawned_children': instance.spawnedChildren,
+  'spawned_children': ?instance.spawnedChildren,
   'stats': instance.stats.toJson(),
   'results': instance.results.map((e) => e.toJson()).toList(),
 };

@@ -1,0 +1,190 @@
+[
+  {
+    "id": 733733,
+    "code": "202109213e70f5",
+    "transaction_code": "TXN-2021-001",
+    "via_cardtrader_zero": true,
+    "order_as": "seller",
+    "buyer": {
+      "id": 12345,
+      "username": "buyer_user",
+      "country_code": "AT",
+      "can_sell_via_hub": false
+    },
+    "cancel_requester": null,
+    "state": "hub_pending",
+    "size": 1,
+    "paid_at": null,
+    "credit_added_to_seller_at": "2021-09-21T16:16:00.000Z",
+    "sent_at": null,
+    "cancelled_at": null,
+    "presale_ended_at": null,
+    "fee_percentage": "5.0",
+    "packing_number": 11,
+    "order_shipping_address": {
+      "id": 1503007,
+      "name": "John Doe",
+      "street": "Via Roma 1",
+      "zip": "50143",
+      "city": "Firenze",
+      "state_or_province": "FI",
+      "country_code": "IT",
+      "note": null,
+      "country": "Italy"
+    },
+    "order_billing_address": {
+      "id": 1503008,
+      "name": "John Doe",
+      "street": "Via Roma 1",
+      "zip": "50143",
+      "city": "Firenze",
+      "state_or_province": "FI",
+      "country_code": "IT",
+      "note": null,
+      "country": "Italy"
+    },
+    "seller_total": {
+      "cents": 1500,
+      "currency": "EUR"
+    },
+    "fee_amount": {
+      "cents": 75,
+      "currency": "EUR"
+    },
+    "seller_fee_amount": {
+      "cents": 75,
+      "currency": "EUR"
+    },
+    "seller_subtotal": {
+      "cents": 1425,
+      "currency": "EUR"
+    },
+    "formatted_subtotal": "€14.25",
+    "formatted_total": "€15.00",
+    "presale": null,
+    "order_shipping_method": {
+      "id": 463937,
+      "name": "Priority Letter",
+      "tracked": false,
+      "tracking_code": null,
+      "max_estimate_shipping_days": 14,
+      "seller_price": {
+        "cents": 150,
+        "currency": "EUR"
+      },
+      "buyer_price": {
+        "cents": 178,
+        "currency": "EUR"
+      },
+      "formatted_price": "€1.50"
+    },
+    "order_items": [
+      {
+        "id": 4094425,
+        "product_id": 105115992,
+        "blueprint_id": 156809,
+        "category_id": 80,
+        "game_id": 6,
+        "name": "Celestial Cataclysm",
+        "expansion": "Monarch",
+        "properties": {
+          "condition": "Near Mint",
+          "fab_language": "en",
+          "fab_foil": true
+        },
+        "quantity": 1,
+        "bundle_size": 1,
+        "description": "",
+        "seller_price": {
+          "cents": 1500,
+          "currency": "EUR"
+        },
+        "cancelled_price": [],
+        "repurchase_price": [],
+        "tag": "",
+        "graded": false,
+        "formatted_price": "€15.00",
+        "mkm_id": null,
+        "user_data_field": null,
+        "tcg_player_id": null,
+        "scryfall_id": null,
+        "deleted_at": null,
+        "created_at": "2021-09-20T15:16:00.000Z",
+        "hub_pending_order_id": null
+      }
+    ]
+  },
+  {
+    "id": 733734,
+    "code": "202109223e70f6",
+    "transaction_code": null,
+    "via_cardtrader_zero": false,
+    "order_as": "buyer",
+    "seller": {
+      "id": 67890,
+      "username": "seller_shop",
+      "country_code": "DE",
+      "can_sell_via_hub": true
+    },
+    "cancel_requester": null,
+    "state": "paid",
+    "size": 2,
+    "paid_at": "2021-09-22T10:00:00.000Z",
+    "credit_added_to_seller_at": null,
+    "sent_at": null,
+    "cancelled_at": null,
+    "presale_ended_at": null,
+    "fee_percentage": "5.0",
+    "packing_number": null,
+    "order_shipping_address": null,
+    "order_billing_address": null,
+    "buyer_total": {
+      "cents": 2000,
+      "currency": "EUR"
+    },
+    "buyer_subtotal": {
+      "cents": 1800,
+      "currency": "EUR"
+    },
+    "fee_amount": {
+      "cents": 100,
+      "currency": "EUR"
+    },
+    "formatted_subtotal": "€18.00",
+    "formatted_total": "€20.00",
+    "presale": false,
+    "order_shipping_method": null,
+    "order_items": [
+      {
+        "id": 4094426,
+        "product_id": 105115993,
+        "blueprint_id": 39063,
+        "category_id": 1,
+        "game_id": 1,
+        "name": "Lightning Bolt",
+        "expansion": "Limited Edition Alpha",
+        "properties": {
+          "condition": "Near Mint",
+          "mtg_language": "en"
+        },
+        "quantity": 2,
+        "bundle_size": 1,
+        "description": "",
+        "buyer_price": {
+          "cents": 900,
+          "currency": "EUR"
+        },
+        "tag": "",
+        "graded": false,
+        "formatted_price": "€9.00",
+        "mkm_id": null,
+        "user_data_field": null,
+        "tcg_player_id": null,
+        "scryfall_id": "d573ef03-4730-45aa-93dd-e45ac1dbaf4a",
+        "deleted_at": null,
+        "created_at": "2021-09-22T10:00:00.000Z",
+        "hub_pending_order_id": null
+      }
+    ]
+  }
+]

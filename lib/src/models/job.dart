@@ -76,15 +76,15 @@ class JobResult {
 /// getters to check the current state.
 @JsonSerializable()
 class Job {
-  /// The unique job UUID.
-  final String uuid;
+  /// The unique job UUID. Can be null if the job doesn't exist.
+  final String? uuid;
 
-  /// The current job state (e.g., "pending", "running", "completed", "unprocessable").
+  /// The current job state (e.g., "pending", "running", "completed", "unprocessable", "unknown").
   final String state;
 
-  /// The number of spawned child operations.
+  /// The number of spawned child operations. Can be null if the job doesn't exist.
   @JsonKey(name: 'spawned_children')
-  final int spawnedChildren;
+  final int? spawnedChildren;
 
   /// The job's result statistics.
   final JobStats stats;
@@ -118,4 +118,7 @@ class Job {
 
   /// Whether the job could not be processed.
   bool get isUnprocessable => state == 'unprocessable';
+
+  /// Whether the job UUID is unknown (doesn't exist).
+  bool get isUnknown => state == 'unknown';
 }

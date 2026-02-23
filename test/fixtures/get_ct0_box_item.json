@@ -1,0 +1,41 @@
+{
+  "id": 1917020,
+  "quantity": {
+    "pending": 1
+  },
+  "seller": {
+    "id": 7343,
+    "username": "CardShop",
+    "country_code": "IT",
+    "can_sell_via_hub": true
+  },
+  "product_id": 99947732,
+  "blueprint_id": 7842,
+  "category_id": 1,
+  "game_id": 1,
+  "name": "Deathcap Cultivator",
+  "expansion": "Shadows over Innistrad",
+  "bundle_size": 1,
+  "description": "Express delivery",
+  "graded": false,
+  "properties": {
+    "condition": "Slightly Played",
+    "mtg_language": "en",
+    "mtg_foil": false
+  },
+  "buyer_price": {
+    "cents": 8,
+    "currency": "EUR"
+  },
+  "formatted_price": "€0.08",
+  "mkm_id": 288973,
+  "tcg_player_id": 115889,
+  "scryfall_id": "fc4aee46-ac42-4ede-ad06-906e2955a9d3",
+  "presale": null,
+  "presale_ended_at": null,
+  "paid_at": "2021-10-02T16:14:54.000Z",
+  "estimated_arrived_at": "2021-10-14T16:14:54.000Z",
+  "arrived_at": null,
+  "cancelled_at": null,
+  "return_to_seller": false
+}

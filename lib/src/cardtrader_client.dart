@@ -1081,6 +1081,290 @@ class CardTraderClient {
     return Job.fromJson(json as Map<String, dynamic>);
   }
 
+  // ========== ORDER MANAGEMENT ==========
+
+  /// **GET**  /orders
+  ///
+  /// Retrieves a paginated list of orders.
+  ///
+  /// Orders are purchase transactions — either items you sold or purchased.
+  ///
+  /// [page] - The page number to retrieve (defaults to 1).
+  /// [limit] - Items per page, 1-100 (defaults to 20).
+  /// [from] - Filter orders from this date (YYYY-MM-DD format).
+  /// [to] - Filter orders up to this date (YYYY-MM-DD format).
+  /// [fromId] - Exclude orders with ID equal or less than this value.
+  /// [toId] - Exclude orders with ID greater than this value.
+  /// [state] - Filter by order state (e.g., "paid", "sent", "hub_pending").
+  /// [orderAs] - Filter by your role: "seller" or "buyer".
+  /// [sort] - Sort format: `<id|date>.<asc|desc>` (defaults to "date.desc").
+  ///
+  /// Example response:
+  /// ```json
+  /// [
+  ///   {
+  ///     "id": 733733,
+  ///     "code": "202109213e70f5",
+  ///     "state": "hub_pending",
+  ///     "size": 1,
+  ///     "via_cardtrader_zero": true,
+  ///     "order_as": "seller",
+  ///     "buyer": { "id": 123, "username": "buyer1" },
+  ///     "seller_total": { "cents": 4, "currency": "EUR" },
+  ///     "order_items": [...]
+  ///   }
+  /// ]
+  /// ```
+  Future<PaginatedResponse<Order>> getOrders({
+    int page = 1,
+    int limit = 20,
+    String? from,
+    String? to,
+    int? fromId,
+    int? toId,
+    String? state,
+    String? orderAs,
+    String? sort,
+  }) async {
+    final queryParams = <String, String>{
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+    if (from != null) queryParams['from'] = from;
+    if (to != null) queryParams['to'] = to;
+    if (fromId != null) queryParams['from_id'] = fromId.toString();
+    if (toId != null) queryParams['to_id'] = toId.toString();
+    if (state != null) queryParams['state'] = state;
+    if (orderAs != null) queryParams['order_as'] = orderAs;
+    if (sort != null) queryParams['sort'] = sort;
+
+    final response = await _get('/orders', queryParameters: queryParams);
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    final orders = (json as List<dynamic>)
+        .map((e) => Order.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    return PaginatedResponse<Order>(page: page, limit: limit, items: orders);
+  }
+
+  /// **GET**  /orders/{id}
+  ///
+  /// Retrieves the details of a specific order.
+  ///
+  /// [id] - The order ID.
+  ///
+  /// Returns an [Order] object with full details including items,
+  /// addresses, and shipping method.
+  Future<Order> getOrder(int id) async {
+    final response = await _get('/orders/$id');
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Order.fromJson(json as Map<String, dynamic>);
+  }
+
+  /// **PUT**  /orders/{id}/tracking_code
+  ///
+  /// Sets a tracking code for an order.
+  ///
+  /// For CardTrader Zero orders, the tracking code must be set
+  /// BEFORE shipping.
+  ///
+  /// You must be the seller in this order.
+  ///
+  /// [id] - The order ID.
+  /// [trackingCode] - The tracking code string.
+  ///
+  /// Returns the updated [Order].
+  Future<Order> setOrderTrackingCode({
+    required int id,
+    required String trackingCode,
+  }) async {
+    final response = await _put(
+      '/orders/$id/tracking_code',
+      body: {'tracking_code': trackingCode},
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Order.fromJson(json as Map<String, dynamic>);
+  }
+
+  /// **PUT**  /orders/{id}/ship
+  ///
+  /// Marks an order as shipped.
+  ///
+  /// If the order is in a state where this operation is not allowed,
+  /// the API will return an error.
+  ///
+  /// [id] - The order ID.
+  ///
+  /// Returns the updated [Order].
+  Future<Order> shipOrder(int id) async {
+    final response = await _put('/orders/$id/ship');
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Order.fromJson(json as Map<String, dynamic>);
+  }
+
+  /// **PUT**  /orders/{id}/request-cancellation
+  ///
+  /// Requests cancellation of an order.
+  ///
+  /// Depending on whether you are the seller or buyer, this sends a
+  /// cancellation request to the other party. Can be done when the order
+  /// is in `paid` or `sent` state.
+  ///
+  /// [id] - The order ID.
+  /// [cancelExplanation] - Reason for cancellation (minimum 50 characters).
+  /// [relistIfCancelled] - Whether to relist items if cancellation is confirmed.
+  ///
+  /// Returns the updated [Order].
+  Future<Order> requestOrderCancellation({
+    required int id,
+    required String cancelExplanation,
+    bool? relistIfCancelled,
+  }) async {
+    final data = <String, dynamic>{'cancel_explanation': cancelExplanation};
+    if (relistIfCancelled != null) {
+      data['relist_if_cancelled'] = relistIfCancelled;
+    }
+
+    final response = await _put('/orders/$id/request-cancellation', body: data);
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Order.fromJson(json as Map<String, dynamic>);
+  }
+
+  /// **PUT**  /orders/{id}/confirm-cancellation
+  ///
+  /// Confirms a cancellation request for an order.
+  ///
+  /// If the current order state does not permit cancellation confirmation,
+  /// the API will return an error.
+  ///
+  /// [id] - The order ID.
+  /// [relistIfCancelled] - (Seller only) Whether to relist items after cancellation.
+  ///
+  /// Returns the updated [Order].
+  Future<Order> confirmOrderCancellation({
+    required int id,
+    bool? relistIfCancelled,
+  }) async {
+    final data = <String, dynamic>{};
+    if (relistIfCancelled != null) {
+      data['relist_if_cancelled'] = relistIfCancelled;
+    }
+
+    final response = await _put(
+      '/orders/$id/confirm-cancellation',
+      body: data.isNotEmpty ? data : null,
+    );
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Order.fromJson(json as Map<String, dynamic>);
+  }
+
+  // ========== CT0 BOX ITEMS ==========
+
+  /// **GET**  /ct0_box_items
+  ///
+  /// Retrieves the list of CT0 Box items you purchased.
+  ///
+  /// A CT0 Box Item is a product purchased via CardTrader Zero
+  /// that has not yet been sent to you directly.
+  ///
+  /// Example response:
+  /// ```json
+  /// [
+  ///   {
+  ///     "id": 1917020,
+  ///     "quantity": { "pending": 1 },
+  ///     "seller": { "id": 123, "username": "seller1" },
+  ///     "name": "Deathcap Cultivator",
+  ///     "buyer_price": { "cents": 8, "currency": "EUR" },
+  ///     "formatted_price": "€0.08"
+  ///   }
+  /// ]
+  /// ```
+  Future<List<Ct0BoxItem>> getCt0BoxItems() async {
+    final response = await _get('/ct0_box_items');
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return (json as List<dynamic>)
+        .map((e) => Ct0BoxItem.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// **GET**  /ct0_box_items/{id}
+  ///
+  /// Retrieves the details of a specific CT0 Box item.
+  ///
+  /// [id] - The CT0 Box item ID.
+  ///
+  /// Returns a [Ct0BoxItem] with full details.
+  Future<Ct0BoxItem> getCt0BoxItem(int id) async {
+    final response = await _get('/ct0_box_items/$id');
+    final json = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw CardTraderException.fromJson(
+        json as Map<String, dynamic>,
+        response.statusCode,
+      );
+    }
+
+    return Ct0BoxItem.fromJson(json as Map<String, dynamic>);
+  }
+
   // ========== PRIVATE METHODS ==========
 
   Future<http.Response> _get(

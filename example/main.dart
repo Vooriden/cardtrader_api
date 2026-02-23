@@ -386,6 +386,8 @@ void main() async {
       print('Bulk create job UUID: $createJobUuid');
       print('');
 
+      sleep(Duration(seconds: 1));
+
       // Check job status
       print('Checking job status...');
       var job = await client.getJobStatus(createJobUuid);
@@ -441,6 +443,138 @@ void main() async {
       }
     } else {
       print('No blueprint available for batch operations example.');
+    }
+
+    sleep(Duration(seconds: 2));
+
+    // ========== ORDER MANAGEMENT ==========
+    print('=== Order Management ===');
+
+    // Get orders (as seller)
+    print('Fetching orders as seller...');
+    final sellerOrders = await client.getOrders(orderAs: 'seller');
+    print(
+      'Seller orders (page ${sellerOrders.page}): ${sellerOrders.items.length}',
+    );
+    for (final order in sellerOrders.items.take(5)) {
+      print('- Order #${order.code} (ID: ${order.id})');
+      print('  State: ${order.state} | Items: ${order.size}');
+      print('  Via CT Zero: ${order.viaCardtraderZero}');
+      if (order.buyer != null) {
+        print('  Buyer: ${order.buyer!.username}');
+      }
+      if (order.sellerTotal != null) {
+        print('  Seller total: ${order.sellerTotal!.formatted}');
+      }
+    }
+    if (sellerOrders.items.length > 5) {
+      print('  ... and ${sellerOrders.items.length - 5} more seller orders');
+    }
+    print('');
+
+    // Get orders (as buyer)
+    print('Fetching orders as buyer...');
+    final buyerOrders = await client.getOrders(orderAs: 'buyer');
+    print(
+      'Buyer orders (page ${buyerOrders.page}): ${buyerOrders.items.length}',
+    );
+    for (final order in buyerOrders.items.take(5)) {
+      print('- Order #${order.code} (ID: ${order.id})');
+      print('  State: ${order.state} | Items: ${order.size}');
+      print('  Via CT Zero: ${order.viaCardtraderZero}');
+      if (order.seller != null) {
+        print('  Seller: ${order.seller!.username}');
+      }
+      if (order.buyerTotal != null) {
+        print('  Buyer total: ${order.buyerTotal!.formatted}');
+      }
+    }
+    if (buyerOrders.items.length > 5) {
+      print('  ... and ${buyerOrders.items.length - 5} more buyer orders');
+    }
+    print('');
+
+    // Get order details
+    final allOrders = [...sellerOrders.items, ...buyerOrders.items];
+    if (allOrders.isNotEmpty) {
+      final sampleOrder = allOrders.first;
+      print('Fetching order details for #${sampleOrder.code}...');
+      final orderDetail = await client.getOrder(sampleOrder.id);
+      print('Order #${orderDetail.code}');
+      print('  State: ${orderDetail.state}');
+      print('  Role: ${orderDetail.orderAs}');
+      if (orderDetail.paidAt != null) {
+        print('  Paid at: ${orderDetail.paidAt}');
+      }
+      if (orderDetail.sentAt != null) {
+        print('  Sent at: ${orderDetail.sentAt}');
+      }
+      if (orderDetail.orderShippingAddress != null) {
+        final addr = orderDetail.orderShippingAddress!;
+        print('  Shipping to: ${addr.name}, ${addr.city}, ${addr.countryCode}');
+      }
+      if (orderDetail.orderShippingMethod != null) {
+        print('  Shipping method: ${orderDetail.orderShippingMethod!.name}');
+      }
+      print('  Items (${orderDetail.orderItems.length}):');
+      for (final item in orderDetail.orderItems.take(5)) {
+        print('    - ${item.name} x${item.quantity}');
+        if (item.buyerPrice != null) {
+          print('      Price: ${item.buyerPrice!.formatted}');
+        }
+      }
+      if (orderDetail.orderItems.length > 5) {
+        print('    ... and ${orderDetail.orderItems.length - 5} more items');
+      }
+    } else {
+      print('No orders found.');
+    }
+
+    print('');
+
+    sleep(Duration(seconds: 2));
+
+    // ========== CT0 BOX ITEMS ==========
+    print('=== CT0 Box Items ===');
+
+    print('Fetching CT0 box items...');
+    final ct0Items = await client.getCt0BoxItems();
+    print('CT0 box items: ${ct0Items.length}');
+    for (final item in ct0Items.take(5)) {
+      print('- ${item.name} (ID: ${item.id})');
+      print('  Expansion: ${item.expansion}');
+      print('  Seller: ${item.seller.username}');
+      print('  Price: ${item.buyerPrice.formatted}');
+      print(
+        '  Quantity: pending=${item.pendingQuantity}, ok=${item.okQuantity}, missing=${item.missingQuantity}',
+      );
+    }
+    if (ct0Items.length > 5) {
+      print('  ... and ${ct0Items.length - 5} more CT0 box items');
+    }
+
+    // Get CT0 box item details
+    if (ct0Items.isNotEmpty) {
+      final sampleCt0 = ct0Items.first;
+      print('');
+      print('Fetching CT0 box item details for "${sampleCt0.name}"...');
+      final ct0Detail = await client.getCt0BoxItem(sampleCt0.id);
+      print('CT0 Item: ${ct0Detail.name}');
+      print('  Blueprint ID: ${ct0Detail.blueprintId}');
+      print('  Category ID: ${ct0Detail.categoryId}');
+      print('  Game ID: ${ct0Detail.gameId}');
+      print('  Bundle size: ${ct0Detail.bundleSize}');
+      print('  Graded: ${ct0Detail.graded}');
+      print('  Paid at: ${ct0Detail.paidAt}');
+      if (ct0Detail.estimatedArrivedAt != null) {
+        print('  Estimated arrival: ${ct0Detail.estimatedArrivedAt}');
+      }
+      if (ct0Detail.arrivedAt != null) {
+        print('  Arrived at: ${ct0Detail.arrivedAt}');
+      }
+      if (ct0Detail.properties.isNotEmpty) {
+        print('  Properties: ${ct0Detail.properties}');
+      }
     }
 
     print('');

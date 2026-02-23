@@ -1,0 +1,85 @@
+{
+  "id": 733733,
+  "code": "202109213e70f5",
+  "transaction_code": "TXN-2021-001",
+  "via_cardtrader_zero": false,
+  "order_as": "seller",
+  "buyer": {
+    "id": 12345,
+    "username": "buyer_user",
+    "country_code": "AT",
+    "can_sell_via_hub": false
+  },
+  "cancel_requester": {
+    "id": 12345,
+    "username": "buyer_user"
+  },
+  "state": "canceled",
+  "size": 1,
+  "paid_at": "2021-09-21T16:16:00.000Z",
+  "credit_added_to_seller_at": null,
+  "sent_at": null,
+  "cancelled_at": "2021-09-23T12:00:00.000Z",
+  "presale_ended_at": null,
+  "fee_percentage": "5.0",
+  "packing_number": null,
+  "order_shipping_address": null,
+  "order_billing_address": null,
+  "seller_total": {
+    "cents": 0,
+    "currency": "EUR"
+  },
+  "fee_amount": {
+    "cents": 0,
+    "currency": "EUR"
+  },
+  "seller_fee_amount": {
+    "cents": 0,
+    "currency": "EUR"
+  },
+  "seller_subtotal": {
+    "cents": 0,
+    "currency": "EUR"
+  },
+  "formatted_subtotal": "€0.00",
+  "formatted_total": "€0.00",
+  "presale": null,
+  "order_shipping_method": null,
+  "order_items": [
+    {
+      "id": 4094425,
+      "product_id": 105115992,
+      "blueprint_id": 156809,
+      "category_id": 80,
+      "game_id": 6,
+      "name": "Celestial Cataclysm",
+      "expansion": "Monarch",
+      "properties": {
+        "condition": "Near Mint"
+      },
+      "quantity": 1,
+      "bundle_size": 1,
+      "description": "",
+      "seller_price": {
+        "cents": 1500,
+        "currency": "EUR"
+      },
+      "cancelled_price": [
+        {
+          "cents": -1500,
+          "currency": "EUR"
+        }
+      ],
+      "tag": "",
+      "graded": false,
+      "formatted_price": "€15.00",
+      "mkm_id": null,
+      "user_data_field": null,
+      "tcg_player_id": null,
+      "scryfall_id": null,
+      "deleted_at": null,
+      "created_at": "2021-09-20T15:16:00.000Z",
+      "hub_pending_order_id": null
+    }
+  ]
+}
