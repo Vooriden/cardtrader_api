@@ -37,16 +37,6 @@ class CardTraderClient {
   /// **GET**  /info
   ///
   /// Test authentication and get [AppInfo] object.
-  ///
-  /// Example response:
-  /// ```json
-  /// {
-  ///   "id": 123,
-  ///   "name": "My App",
-  ///   "shared_secret": "abc123",
-  ///   "user_id": 456
-  /// }
-  /// ```
   Future<AppInfo> getInfo() async {
     final response = await _get('/info');
 
@@ -64,19 +54,6 @@ class CardTraderClient {
   /// **GET**  /games
   ///
   /// Retrieves the list of games.
-  ///
-  /// Example response:
-  /// ```json
-  /// {
-  ///   "array": [
-  ///     {
-  ///       "id": 1,
-  ///       "display_name": "Magic: the Gathering",
-  ///       "name": "Magic"
-  ///     }
-  ///   ]
-  /// }
-  /// ```
   Future<GameList> getGames() async {
     final response = await _get('/games');
     final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -98,24 +75,6 @@ class CardTraderClient {
   /// such as "Single Cards", "Sealed Products", "Accessories", etc.
   ///
   /// [gameId] - Optional filter by game ID to get categories for a specific game.
-  ///
-  /// Example response:
-  /// ```json
-  /// [
-  ///   {
-  ///     "id": 1,
-  ///     "name": "Single Cards",
-  ///     "game_id": 1,
-  ///     "properties": [
-  ///       {
-  ///         "name": "condition",
-  ///         "type": "string",
-  ///         "possible_values": ["Near Mint", "Excellent", "Good", "Poor"]
-  ///       }
-  ///     ]
-  ///   }
-  /// ]
-  /// ```
   Future<List<Category>> getCategories({int? gameId}) async {
     final queryParameters = gameId != null
         ? {'game_id': gameId.toString()}
@@ -147,18 +106,6 @@ class CardTraderClient {
   ///
   /// Expansions are collections of products released together,
   /// such as "Dominaria" or "Core Set 2021" in Magic: the Gathering.
-  ///
-  /// Example response:
-  /// ```json
-  /// [
-  ///   {
-  ///     "id": 20,
-  ///     "game_id": 1,
-  ///     "code": "dom",
-  ///     "name": "Dominaria"
-  ///   }
-  /// ]
-  /// ```
   Future<List<Expansion>> getExpansions() async {
     final response = await _get('/expansions');
     final json = jsonDecode(response.body);
@@ -180,18 +127,6 @@ class CardTraderClient {
   /// Retrieves the list of expansions that you have in your inventory.
   ///
   /// This returns only expansions where you have products listed.
-  ///
-  /// Example response:
-  /// ```json
-  /// [
-  ///   {
-  ///     "id": 123,
-  ///     "game_id": 1,
-  ///     "code": "dom",
-  ///     "name": "Dominaria"
-  ///   }
-  /// ]
-  /// ```
   Future<List<Expansion>> getMyExpansions() async {
     final response = await _get('/expansions/export');
     final json = jsonDecode(response.body);
@@ -218,67 +153,6 @@ class CardTraderClient {
   /// including its name, associated expansion, category, and editable properties.
   ///
   /// [expansionId] - Required expansion ID to get blueprints for.
-  ///
-  /// Example response:
-  /// ```json
-  /// [
-  ///   {
-  ///     "id": 39063,
-  ///     "name": "Lightning Bolt",
-  ///     "version": null,
-  ///     "game_id": 1,
-  ///     "category_id": 1,
-  ///     "expansion_id": 404,
-  ///     "fixed_properties": {
-  ///       "mtg_rarity": "Common",
-  ///       "collector_number": "161"
-  ///     },
-  ///     "editable_properties": [
-  ///       {
-  ///         "name": "condition",
-  ///         "type": "string",
-  ///         "default_value": "Near Mint",
-  ///         "possible_values": [
-  ///           "Near Mint",
-  ///           "Slightly Played",
-  ///           "Moderately Played",
-  ///           "Played",
-  ///           "Poor"
-  ///         ]
-  ///       },
-  ///       {
-  ///         "name": "signed",
-  ///         "type": "boolean",
-  ///         "default_value": "false",
-  ///         "possible_values": [true, false]
-  ///       },
-  ///       {
-  ///         "name": "altered",
-  ///         "type": "boolean",
-  ///         "default_value": "false",
-  ///         "possible_values": [true, false]
-  ///       }
-  ///     ],
-  ///     "card_market_ids": [5395],
-  ///     "tcg_player_id": 1174,
-  ///     "scryfall_id": "d573ef03-4730-45aa-93dd-e45ac1dbaf4a",
-  ///     "image_url": "https://cardtrader.com/uploads/blueprints/image/39063/preview_lightning-bolt-limited-edition-alpha.jpg",
-  ///     "image": {
-  ///       "url": "/uploads/blueprints/image/39063/lightning-bolt-limited-edition-alpha.jpg",
-  ///       "show": {
-  ///         "url": "/uploads/blueprints/image/39063/show_lightning-bolt-limited-edition-alpha.jpg"
-  ///       },
-  ///       "preview": {
-  ///         "url": "/uploads/blueprints/image/39063/preview_lightning-bolt-limited-edition-alpha.jpg"
-  ///       },
-  ///       "social": {
-  ///         "url": "/uploads/blueprints/image/39063/social_lightning-bolt-limited-edition-alpha.jpg"
-  ///       }
-  ///     },
-  ///     "back_image": null
-  ///   }
-  /// ]
-  /// ```
   Future<List<Blueprint>> getBlueprintsByExpansion(int expansionId) async {
     final response = await _get(
       '/blueprints/export',
@@ -312,47 +186,6 @@ class CardTraderClient {
   /// [blueprintId] - Filter products by blueprint ID.
   /// [foil] - Optional filter for foil products.
   /// [language] - Optional filter by language (2-letter code like 'en', 'it').
-  ///
-  /// Example response:
-  /// ```json
-  /// {
-  ///   "3138": [
-  ///     {
-  ///       "id": 302179007,
-  ///       "blueprint_id": 3138,
-  ///       "name_en": "Earl of Squirrel",
-  ///       "expansion": {
-  ///         "code": "pust",
-  ///         "id": 34,
-  ///         "name_en": "Unstable Promos"
-  ///       },
-  ///       "price_cents": 20,
-  ///       "price_currency": "EUR",
-  ///       "quantity": 1,
-  ///       "description": "",
-  ///       "properties_hash": {
-  ///         "condition": "Near Mint",
-  ///         "mtg_foil": true,
-  ///         "mtg_language": "it"
-  ///       },
-  ///       "graded": false,
-  ///       "on_vacation": false,
-  ///       "user": {
-  ///         "id": 7343,
-  ///         "username": "Astaroth",
-  ///         "country_code": "IT",
-  ///         "can_sell_via_hub": false
-  ///       },
-  ///       "price": {
-  ///         "cents": 20,
-  ///         "currency": "EUR",
-  ///         "currency_symbol": "€",
-  ///         "formatted": "€0.20"
-  ///       }
-  ///     }
-  ///   ]
-  /// }
-  /// ```
   Future<Map<String, List<MarketplaceProduct>>> getMarketplaceProducts({
     int? expansionId,
     int? blueprintId,
@@ -406,29 +239,6 @@ class CardTraderClient {
   ///
   /// Returns the cart with all subcarts (grouped by seller),
   /// items, totals, fees, and addresses.
-  ///
-  /// Example response:
-  /// ```json
-  /// {
-  ///   "id": 12345,
-  ///   "subcarts": [
-  ///     {
-  ///       "id": 1,
-  ///       "seller": {"id": 789, "username": "cardshop"},
-  ///       "cart_items": [
-  ///         {
-  ///           "quantity": 2,
-  ///           "price_cents": 500,
-  ///           "price_currency": "EUR",
-  ///           "product": {"id": 123, "name_en": "Lightning Bolt"}
-  ///         }
-  ///       ]
-  ///     }
-  ///   ],
-  ///   "subtotal": {"cents": 1000, "currency": "EUR"},
-  ///   "shipping_cost": {"cents": 200, "currency": "EUR"}
-  /// }
-  /// ```
   Future<Cart> getCart() async {
     final response = await _get('/cart');
     final json = jsonDecode(response.body);
@@ -954,24 +764,6 @@ class CardTraderClient {
   /// [products] - A list of [ProductRequest] objects specifying the products
   /// to create. Each request must include blueprintId, price, and quantity.
   ///
-  /// Example:
-  /// ```dart
-  /// final products = [
-  ///   ProductRequest(
-  ///     blueprintId: 39063,
-  ///     price: 5.00,
-  ///     quantity: 4,
-  ///     properties: {'condition': 'Near Mint'},
-  ///   ),
-  ///   ProductRequest(
-  ///     blueprintId: 39064,
-  ///     price: 2.50,
-  ///     quantity: 2,
-  ///   ),
-  /// ];
-  /// final jobId = await client.bulkCreateProducts(products);
-  /// ```
-  ///
   /// Returns a job UUID string to check status via [getJobStatus].
   Future<String> bulkCreateProducts(List<ProductRequest> products) async {
     final response = await _post(
@@ -999,15 +791,6 @@ class CardTraderClient {
   /// products to update. Each request must include the product id and any
   /// fields to update.
   ///
-  /// Example:
-  /// ```dart
-  /// final products = [
-  ///   ProductUpdateRequest(id: 123456, price: 5.00),
-  ///   ProductUpdateRequest(id: 123457, quantity: 10),
-  /// ];
-  /// final jobId = await client.bulkUpdateProducts(products);
-  /// ```
-  ///
   /// Returns a job UUID string to check status via [getJobStatus].
   Future<String> bulkUpdateProducts(List<ProductUpdateRequest> products) async {
     final response = await _post(
@@ -1032,12 +815,6 @@ class CardTraderClient {
   /// Bulk deletes products asynchronously.
   ///
   /// [productIds] - A list of product IDs to delete.
-  ///
-  /// Example:
-  /// ```dart
-  /// final productIds = [123456, 123457, 123458];
-  /// final jobId = await client.bulkDeleteProducts(productIds);
-  /// ```
   ///
   /// Returns a job UUID string to check status via [getJobStatus].
   Future<String> bulkDeleteProducts(List<int> productIds) async {
@@ -1098,23 +875,6 @@ class CardTraderClient {
   /// [state] - Filter by order state (e.g., "paid", "sent", "hub_pending").
   /// [orderAs] - Filter by your role: "seller" or "buyer".
   /// [sort] - Sort format: `<id|date>.<asc|desc>` (defaults to "date.desc").
-  ///
-  /// Example response:
-  /// ```json
-  /// [
-  ///   {
-  ///     "id": 733733,
-  ///     "code": "202109213e70f5",
-  ///     "state": "hub_pending",
-  ///     "size": 1,
-  ///     "via_cardtrader_zero": true,
-  ///     "order_as": "seller",
-  ///     "buyer": { "id": 123, "username": "buyer1" },
-  ///     "seller_total": { "cents": 4, "currency": "EUR" },
-  ///     "order_items": [...]
-  ///   }
-  /// ]
-  /// ```
   Future<PaginatedResponse<Order>> getOrders({
     int page = 1,
     int limit = 20,
@@ -1314,20 +1074,6 @@ class CardTraderClient {
   ///
   /// A CT0 Box Item is a product purchased via CardTrader Zero
   /// that has not yet been sent to you directly.
-  ///
-  /// Example response:
-  /// ```json
-  /// [
-  ///   {
-  ///     "id": 1917020,
-  ///     "quantity": { "pending": 1 },
-  ///     "seller": { "id": 123, "username": "seller1" },
-  ///     "name": "Deathcap Cultivator",
-  ///     "buyer_price": { "cents": 8, "currency": "EUR" },
-  ///     "formatted_price": "€0.08"
-  ///   }
-  /// ]
-  /// ```
   Future<List<Ct0BoxItem>> getCt0BoxItems() async {
     final response = await _get('/ct0_box_items');
     final json = jsonDecode(response.body);
