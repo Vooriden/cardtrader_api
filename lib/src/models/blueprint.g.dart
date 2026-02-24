@@ -7,80 +7,74 @@ part of 'blueprint.dart';
 // **************************************************************************
 
 Blueprint _$BlueprintFromJson(Map<String, dynamic> json) => $checkedCreate(
-  'Blueprint',
-  json,
-  ($checkedConvert) {
-    final val = Blueprint(
-      id: $checkedConvert('id', (v) => (v as num).toInt()),
-      name: $checkedConvert('name', (v) => v as String),
-      version: $checkedConvert('version', (v) => v as String?),
-      gameId: $checkedConvert('game_id', (v) => (v as num).toInt()),
-      categoryId: $checkedConvert('category_id', (v) => (v as num).toInt()),
-      expansionId: $checkedConvert('expansion_id', (v) => (v as num).toInt()),
-      imageUrl: $checkedConvert('image_url', (v) => v as String?),
-      image: $checkedConvert(
-        'image',
-        (v) => v == null
-            ? null
-            : BlueprintImage.fromJson(v as Map<String, dynamic>),
-      ),
-      backImage: $checkedConvert(
-        'back_image',
-        (v) => v == null
-            ? null
-            : BlueprintImage.fromJson(v as Map<String, dynamic>),
-      ),
-      fixedProperties: $checkedConvert(
-        'fixed_properties',
-        (v) => v as Map<String, dynamic>,
-      ),
-      editableProperties: $checkedConvert(
-        'editable_properties',
-        (v) => (v as List<dynamic>)
-            .map((e) => Property.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      ),
-      scryfallId: $checkedConvert('scryfall_id', (v) => v as String?),
-      cardMarketIds: $checkedConvert(
-        'card_market_ids',
-        (v) => (v as List<dynamic>?)?.map((e) => (e as num).toInt()).toList(),
-      ),
-      tcgPlayerId: $checkedConvert(
-        'tcg_player_id',
-        (v) => (v as num?)?.toInt(),
-      ),
+      'Blueprint',
+      json,
+      ($checkedConvert) {
+        final val = Blueprint(
+          id: $checkedConvert('id', (v) => (v as num).toInt()),
+          name: $checkedConvert('name', (v) => v as String),
+          version: $checkedConvert('version', (v) => v as String?),
+          gameId: $checkedConvert('game_id', (v) => (v as num).toInt()),
+          categoryId: $checkedConvert('category_id', (v) => (v as num).toInt()),
+          expansionId:
+              $checkedConvert('expansion_id', (v) => (v as num).toInt()),
+          imageUrl: $checkedConvert('image_url', (v) => v as String?),
+          image: $checkedConvert(
+              'image',
+              (v) => v == null
+                  ? null
+                  : BlueprintImage.fromJson(v as Map<String, dynamic>)),
+          backImage: $checkedConvert(
+              'back_image',
+              (v) => v == null
+                  ? null
+                  : BlueprintImage.fromJson(v as Map<String, dynamic>)),
+          fixedProperties: $checkedConvert(
+              'fixed_properties', (v) => v as Map<String, dynamic>),
+          editableProperties: $checkedConvert(
+              'editable_properties',
+              (v) => (v as List<dynamic>)
+                  .map((e) => Property.fromJson(e as Map<String, dynamic>))
+                  .toList()),
+          scryfallId: $checkedConvert('scryfall_id', (v) => v as String?),
+          cardMarketIds: $checkedConvert(
+              'card_market_ids',
+              (v) => (v as List<dynamic>?)
+                  ?.map((e) => (e as num).toInt())
+                  .toList()),
+          tcgPlayerId:
+              $checkedConvert('tcg_player_id', (v) => (v as num?)?.toInt()),
+        );
+        return val;
+      },
+      fieldKeyMap: const {
+        'gameId': 'game_id',
+        'categoryId': 'category_id',
+        'expansionId': 'expansion_id',
+        'imageUrl': 'image_url',
+        'backImage': 'back_image',
+        'fixedProperties': 'fixed_properties',
+        'editableProperties': 'editable_properties',
+        'scryfallId': 'scryfall_id',
+        'cardMarketIds': 'card_market_ids',
+        'tcgPlayerId': 'tcg_player_id'
+      },
     );
-    return val;
-  },
-  fieldKeyMap: const {
-    'gameId': 'game_id',
-    'categoryId': 'category_id',
-    'expansionId': 'expansion_id',
-    'imageUrl': 'image_url',
-    'backImage': 'back_image',
-    'fixedProperties': 'fixed_properties',
-    'editableProperties': 'editable_properties',
-    'scryfallId': 'scryfall_id',
-    'cardMarketIds': 'card_market_ids',
-    'tcgPlayerId': 'tcg_player_id',
-  },
-);
 
 Map<String, dynamic> _$BlueprintToJson(Blueprint instance) => <String, dynamic>{
-  'id': instance.id,
-  'name': instance.name,
-  'version': ?instance.version,
-  'game_id': instance.gameId,
-  'category_id': instance.categoryId,
-  'expansion_id': instance.expansionId,
-  'image_url': ?instance.imageUrl,
-  'image': ?instance.image?.toJson(),
-  'back_image': ?instance.backImage?.toJson(),
-  'fixed_properties': instance.fixedProperties,
-  'editable_properties': instance.editableProperties
-      .map((e) => e.toJson())
-      .toList(),
-  'scryfall_id': ?instance.scryfallId,
-  'card_market_ids': ?instance.cardMarketIds,
-  'tcg_player_id': ?instance.tcgPlayerId,
-};
+      'id': instance.id,
+      'name': instance.name,
+      if (instance.version case final value?) 'version': value,
+      'game_id': instance.gameId,
+      'category_id': instance.categoryId,
+      'expansion_id': instance.expansionId,
+      if (instance.imageUrl case final value?) 'image_url': value,
+      if (instance.image?.toJson() case final value?) 'image': value,
+      if (instance.backImage?.toJson() case final value?) 'back_image': value,
+      'fixed_properties': instance.fixedProperties,
+      'editable_properties':
+          instance.editableProperties.map((e) => e.toJson()).toList(),
+      if (instance.scryfallId case final value?) 'scryfall_id': value,
+      if (instance.cardMarketIds case final value?) 'card_market_ids': value,
+      if (instance.tcgPlayerId case final value?) 'tcg_player_id': value,
+    };
