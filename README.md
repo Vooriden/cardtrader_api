@@ -1,5 +1,7 @@
 # CardTrader API
 
+[![codecov](https://codecov.io/github/vooriden/cardtrader_api/graph/badge.svg?token=0G24YXDU9U)](https://codecov.io/github/vooriden/cardtrader_api)
+
 A Dart client library for the [CardTrader API](https://www.cardtrader.com/en/docs/api).
 
 ## Installation
