@@ -2083,7 +2083,8 @@ void main() {
         expect(order.cancelRequester, isNotNull);
       });
 
-      test('should send body with cancel_explanation and relist flag', () async {
+      test('should send body with cancel_explanation and relist flag',
+          () async {
         final file = File('test/fixtures/request_cancellation.json');
         final jsonContent = await file.readAsString();
 

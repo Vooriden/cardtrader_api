@@ -65,8 +65,8 @@ void main() {
                 1,
               )
               .having((b) => b.scryfallId, 'scryfallId', '')
-              .having((b) => b.cardMarketIds, 'cardMarketIds', [564841])
-              .having((b) => b.tcgPlayerId, 'tcgPlayerId', null),
+              .having((b) => b.cardMarketIds, 'cardMarketIds', [564841]).having(
+                  (b) => b.tcgPlayerId, 'tcgPlayerId', null),
         );
       });
 

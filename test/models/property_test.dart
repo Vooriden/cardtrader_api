@@ -21,11 +21,11 @@ void main() {
               .having((p) => p.type, 'type', 'string')
               .having((p) => p.defaultValue, 'defaultValue', 'Near Mint')
               .having((p) => p.possibleValues, 'possibleValues', [
-                "Near Mint",
-                "Excellent",
-                "Good",
-                "Poor",
-              ]),
+            "Near Mint",
+            "Excellent",
+            "Good",
+            "Poor",
+          ]),
         );
       });
 
