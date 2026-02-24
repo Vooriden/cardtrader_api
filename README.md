@@ -8,7 +8,7 @@ Add this package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  cardtrader_api: ^0.1.0
+  cardtrader_api: ^1.0.0
 ```
 
 Then run:
@@ -95,68 +95,6 @@ try {
 ```
 
 After calling `close()`, any further requests will throw an exception.
-
-## Available Endpoints
-
-### App Info
-
-- `getInfo()` — Test authentication and get application details.
-
-### Games
-
-- `getGames()` — List all supported games.
-
-### Categories
-
-- `getCategories({gameId})` — List categories, optionally filtered by game.
-
-### Expansions
-
-- `getExpansions()` — List all expansions.
-- `getMyExpansions()` — List expansions you have products in.
-
-### Blueprints
-
-- `getBlueprintsByExpansion(expansionId)` — List blueprints for an expansion.
-
-### Marketplace
-
-- `getMarketplaceProducts({expansionId, blueprintId, foil, language})` — Browse marketplace listings.
-
-### Cart
-
-- `getCart()` — Get current cart.
-- `addToCart({productId, quantity, viaCardtraderZero, ...})` — Add item to cart.
-- `removeFromCart({productId, quantity})` — Remove item from cart.
-- `purchaseCart()` — Purchase the cart.
-
-### Wishlists
-
-- `getWishlists({gameId, page, limit})` — List wishlists (paginated).
-- `getWishlist(id)` — Get wishlist details with items.
-- `createWishlist({name, gameId, ...})` — Create a new wishlist.
-- `deleteWishlist(id)` — Delete a wishlist.
-
-### Inventory Management
-
-- `getMyProducts({blueprintId, expansionId})` — List your products.
-- `createProduct({blueprintId, price, quantity, ...})` — Create a product listing.
-- `updateProduct({id, price, quantity, ...})` — Update a product listing.
-- `deleteProduct(id)` — Delete a product listing.
-- `incrementProduct({id, deltaQuantity})` — Increment/decrement product quantity.
-
-### Product Images
-
-- `uploadProductImage({id, imageBytes, filename})` — Upload an image file to a product.
-- `uploadProductImageFromUrl({id, imageUrl})` — Upload an image to a product from a remote URL.
-- `removeProductImage(id)` — Remove the image from a product.
-
-### Batch Operations
-
-- `bulkCreateProducts(products)` — Bulk create products (async, returns job UUID).
-- `bulkUpdateProducts(products)` — Bulk update products (async, returns job UUID).
-- `bulkDeleteProducts(products)` — Bulk delete products (async, returns job UUID).
-- `getJobStatus(uuid)` — Check batch job status and results.
 
 ## API Documentation
 
