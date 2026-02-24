@@ -1,6 +1,6 @@
 name: cardtrader_api
 description: A Dart package for interacting with the CardTrader API.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/Vooriden/cardtrader_api
 
 environment:

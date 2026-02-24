@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1]
+
+### Changed
+
+- Lowered SDK constraint from `^3.8.0` to `^3.4.0` for wider compatibility (Flutter 3.22+)
+- Widened dependency version ranges to support more environments
+- Capped `json_serializable` to `<6.10.0` to avoid null-aware-elements syntax requiring Dart 3.8+
+
 ## [1.0.0]
 
 ### Added
