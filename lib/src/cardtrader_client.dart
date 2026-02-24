@@ -19,8 +19,8 @@ class CardTraderClient {
   ///
   /// Creates a [CardTraderClient] with the given [apiKey] and optional [httpClient].
   CardTraderClient({http.Client? httpClient, required String apiKey})
-    : _httpClient = httpClient ?? http.Client(),
-      _apiKey = apiKey;
+      : _httpClient = httpClient ?? http.Client(),
+        _apiKey = apiKey;
 
   /// Closes the underlying [http.Client].
   ///
@@ -77,9 +77,8 @@ class CardTraderClient {
   ///
   /// [gameId] - Optional filter by game ID to get categories for a specific game.
   Future<List<Category>> getCategories({int? gameId}) async {
-    final queryParameters = gameId != null
-        ? {'game_id': gameId.toString()}
-        : null;
+    final queryParameters =
+        gameId != null ? {'game_id': gameId.toString()} : null;
 
     final response = await _get(
       '/categories',
