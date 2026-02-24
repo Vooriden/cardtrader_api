@@ -452,7 +452,7 @@ void main() async {
 
     // Get orders (as seller)
     print('Fetching orders as seller...');
-    final sellerOrders = await client.getOrders(orderAs: 'seller');
+    final sellerOrders = await client.getOrders(orderAs: OrderAs.seller);
     print(
       'Seller orders (page ${sellerOrders.page}): ${sellerOrders.items.length}',
     );
@@ -474,7 +474,7 @@ void main() async {
 
     // Get orders (as buyer)
     print('Fetching orders as buyer...');
-    final buyerOrders = await client.getOrders(orderAs: 'buyer');
+    final buyerOrders = await client.getOrders(orderAs: OrderAs.buyer);
     print(
       'Buyer orders (page ${buyerOrders.page}): ${buyerOrders.items.length}',
     );

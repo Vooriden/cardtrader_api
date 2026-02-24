@@ -13,6 +13,7 @@ export 'job.dart';
 export 'marketplace_product.dart';
 export 'money.dart';
 export 'order.dart';
+export 'order_as.dart';
 export 'paginated_response.dart';
 export 'product.dart';
 export 'product_request.dart';

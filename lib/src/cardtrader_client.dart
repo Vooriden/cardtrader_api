@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:cardtrader_api/src/models/models.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 /// {@template card_trader_client}
 /// Dart client for CardTrader API
@@ -868,34 +869,39 @@ class CardTraderClient {
   ///
   /// [page] - The page number to retrieve (defaults to 1).
   /// [limit] - Items per page, 1-100 (defaults to 20).
-  /// [from] - Filter orders from this date (YYYY-MM-DD format).
-  /// [to] - Filter orders up to this date (YYYY-MM-DD format).
+  /// [from] - Filter orders from this date.
+  /// [to] - Filter orders up to this date.
   /// [fromId] - Exclude orders with ID equal or less than this value.
   /// [toId] - Exclude orders with ID greater than this value.
   /// [state] - Filter by order state (e.g., "paid", "sent", "hub_pending").
-  /// [orderAs] - Filter by your role: "seller" or "buyer".
+  /// [orderAs] - Filter by your role: [OrderAs.seller] or [OrderAs.buyer].
   /// [sort] - Sort format: `<id|date>.<asc|desc>` (defaults to "date.desc").
   Future<PaginatedResponse<Order>> getOrders({
     int page = 1,
     int limit = 20,
-    String? from,
-    String? to,
+    DateTime? from,
+    DateTime? to,
     int? fromId,
     int? toId,
     String? state,
-    String? orderAs,
+    OrderAs? orderAs,
     String? sort,
   }) async {
     final queryParams = <String, String>{
       'page': page.toString(),
       'limit': limit.toString(),
     };
-    if (from != null) queryParams['from'] = from;
-    if (to != null) queryParams['to'] = to;
+    final dateFormat = DateFormat('yyyy-MM-dd');
+    if (from != null) {
+      queryParams['from'] = dateFormat.format(from);
+    }
+    if (to != null) {
+      queryParams['to'] = dateFormat.format(to);
+    }
     if (fromId != null) queryParams['from_id'] = fromId.toString();
     if (toId != null) queryParams['to_id'] = toId.toString();
     if (state != null) queryParams['state'] = state;
-    if (orderAs != null) queryParams['order_as'] = orderAs;
+    if (orderAs != null) queryParams['order_as'] = orderAs.value;
     if (sort != null) queryParams['sort'] = sort;
 
     final response = await _get('/orders', queryParameters: queryParams);

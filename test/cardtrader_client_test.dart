@@ -1786,12 +1786,12 @@ void main() {
         await cardTraderClient.getOrders(
           page: 2,
           limit: 50,
-          from: '2021-01-01',
-          to: '2021-12-31',
+          from: DateTime(2021, 1, 1),
+          to: DateTime(2021, 12, 31),
           fromId: 100,
           toId: 999,
           state: 'paid',
-          orderAs: 'seller',
+          orderAs: OrderAs.seller,
           sort: 'date.desc',
         );
 
