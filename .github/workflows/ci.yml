@@ -46,8 +46,6 @@ jobs:
 
       - name: Run tests
         run: flutter test --coverage
-        env:
-          CARDTRADER_API_KEY: ${{ secrets.CARDTRADER_API_KEY }}
 
       - name: Upload to Codecov
         if: ${{ !env.ACT }}
